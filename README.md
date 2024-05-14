@@ -8,7 +8,7 @@ It would be helpful if you could install the following software before the works
 Can be done with instructions from https://www.docker.com/get-started/ And docker compose https://docs.docker.com/compose/install/linux/
 
 ### Using a Docker image
-This is the easiest way to get started. You can run the following command to pull the Docker image and run a container. The main benefit of this method is that it hides all the painful (Nvidia and PyTorch) installation details from you. Since this is relatively large, please let me know if you need help downloading it.
+This is the easiest way to get started. You can run the following command to pull the Docker image and run a container. The main benefit of this method is that it hides all the painful (Nvidia and PyTorch) installation details from you. Since this is relatively large, please let me know if you need help downloading it. The container image is self-hosted and available here: http://gl4zopvaw2y4qi6fz2erkvo4mzdfjrlmtyis3iissx2di6dfnsv4p2id.onion. To download this image you might need the [Tor Browser]([url](https://www.torproject.org/download/)).
 
 
 ### Building your local container
