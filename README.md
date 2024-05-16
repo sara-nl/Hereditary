@@ -83,6 +83,6 @@ python3 -m pip install -U pip
 python3 -m pip install -U setuptools
 python3 -m pip install matplotlib scikit-learn torch torchvision torchaudio transformers evaluate datasets tqdm pillow pytorch_lightning jupyter notebook
 python3 -m pip install nvflare
-python3 -m pip install flwr flwr_datasets
+python3 -m pip install flwr flwr-datasets
 python3 -m pip install syft
 ```
