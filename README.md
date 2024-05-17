@@ -4,7 +4,7 @@
 
 ```python client.py --partition-id 0```
 
-Please replace 0 with a number 0-4
+Please replace 0 with a number 0-5
 
 ## Software installation
 It would be helpful if you could install the following software before the workshop. If you have any trouble, we can help you during the workshop.
