@@ -26,6 +26,6 @@ if __name__ == "__main__":
     strategy = fl.server.strategy.FedAvg(evaluate_metrics_aggregation_fn=weighted_average)
 
     fl.server.start_server(
-        server_address="192.168.2.8:8080", 
+        server_address="localhost:8080", 
         config=fl.server.ServerConfig(num_rounds=1), 
         strategy=strategy)
