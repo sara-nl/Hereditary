@@ -11,13 +11,13 @@ from datasets.utils.logging import disable_progress_bar
 from torch.utils.data import DataLoader
 
 import flwr as fl
-from flwr.common import Metrics
+from flwr.common import Metrics, Context
 from flwr_datasets import FederatedDataset
 
 import time
 
 
-DEVICE = torch.device("CPU")  # Try "cuda" to train on GPU
+DEVICE = torch.device("cpu")  # Try "cuda" to train on GPU
 print(
     f"Training on {DEVICE} using PyTorch {torch.__version__} and Flower {fl.__version__}"
 )
@@ -190,7 +190,7 @@ class FlowerClient(fl.client.NumPyClient):
         return float(loss), len(self.valloader), {"accuracy": float(accuracy)}
     
 
-def client_fn(cid: str) -> FlowerClient:
+def client_fn(context: Context) -> FlowerClient:
     """Create a Flower client representing a single organization."""
 
     # Load model
@@ -199,8 +199,8 @@ def client_fn(cid: str) -> FlowerClient:
     # Load data (CIFAR-10)
     # Note: each client gets a different trainloader/valloader, so each client
     # will train and evaluate on their own unique data
-    trainloader = trainloaders[int(cid)]
-    valloader = valloaders[int(cid)]
+    trainloader = trainloaders[int(context.node_config["partition-id"])]
+    valloader = valloaders[int(context.node_config["partition-id"])]
 
     # Create a  single Flower client representing a single organization
     return FlowerClient(net, trainloader, valloader).to_client()
@@ -220,9 +220,9 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
 strategy = fl.server.strategy.FedAvg(
     fraction_fit=1.0,
     fraction_evaluate=0.5,
-    min_fit_clients=1,
-    min_evaluate_clients=2,
-    min_available_clients=1,
+    min_fit_clients=3,
+    min_evaluate_clients=3,
+    min_available_clients=3,
     evaluate_metrics_aggregation_fn=weighted_average,  # <-- pass the metric aggregation function
 )
 
