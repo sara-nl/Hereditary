@@ -3,6 +3,7 @@ import warnings
 from collections import OrderedDict
 
 from flwr.client import NumPyClient, ClientApp
+from flwr.common import Context
 from flwr_datasets import FederatedDataset
 import torch
 import torch.nn as nn
@@ -131,7 +132,7 @@ class FlowerClient(NumPyClient):
         return loss, len(testloader.dataset), {"accuracy": accuracy}
 
 
-def client_fn(cid: str):
+def client_fn(ccontext: Context):
     """Create and return an instance of Flower `Client`."""
     return FlowerClient().to_client()
 
