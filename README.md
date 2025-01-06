@@ -1,93 +1,30 @@
-# Federated learning workshop
+# Hereditary workshop 3
+This branch contains the code for the workshop 3 of the Hereditary project. The readme will first explain how to download the data, then how to run the experiments. 
+## Data download instructions
+### CLEF
+In order to download the CLEF data, you need to follow these steps:
+1. Sign into the grouppage at https://hereditary.dei.unipd.it/groupoffice/#summary 
+2. Go to files -> Hereditary/Data/BRAINTEASER_ALS_MS_datasets and download the prospective.zip and retrospective.zip files. 
+3. Extract the zip files  
 
-## Day 2 practical
-
-```python client.py --partition-id 0```
-
-Please replace 0 with a number 0-5
-
-## Software installation
-It would be helpful if you could install the following software before the workshop. If you have any trouble, we can help you during the workshop.
-
-### Installing Docker
-Can be done with instructions from https://www.docker.com/get-started/ And docker compose https://docs.docker.com/compose/install/linux/
-
-### Using a Docker image
-This is the easiest way to get started. You can run the following command to pull the Docker image and run a container. The main benefit of this method is that it hides all the painful (Nvidia and PyTorch) installation details from you. Since this is relatively large, please let me know if you need help downloading it. The container image is self-hosted and available [here](http://76sc3oxvyordhucbn6a2bpcwwlblfs6xgyxukkxkagpoavnlgtu77nid.onion). To download this image you might need the [Tor Browser](https://www.torproject.org/download/).
+### FETS
+In order to download the FETS data, you need to follow these steps: 
+1. Create a synapse.org account 
+2. Go to your account settings (https://accounts.synapse.org/authenticated/myaccount?appId=synapse.org) and create a Personal Access Token (and make sure to save it) 
+3. Sign up for FETS 2024 here: https://www.synapse.org/Synapse:syn54079892/wiki/626854 
+4. Complete the data access form    
+5. For downloading using Python/CLI, install this package: https://pypi.org/project/synapseclient/ 
+6. Go to the files page: https://www.synapse.org/Synapse:syn29264504 
+7. Select the right task and add the files to your cart.  
+8. View your download list: https://www.synapse.org/DownloadCart:0 and make sure it’s correct 
+9. Call this command in your terminal to download the files: synapse get-download-list 
+10. Enter your username and personal access token when prompted and the download will start. 
 
 
-### Building your local container
-If you prefer to build your container, use the following Dockerfile. This will install all the required software in a container.
+## Federated learning with XGBoost and CLEF
+See the xgboost-CLEF directory for the code to partition the data and run the federated learning experiments. 
 
-```Dockerfile
-# Description: Dockerfile for the hereditary project
-#Start from the base pytorch image
-ARG PYTORCH_IMAGE=nvcr.io/nvidia/pytorch:23.12-py3
-FROM ${PYTORCH_IMAGE}
 
-#Set the working directory
-WORKDIR /mnt/workspace/
+## Federated learning with FETS
+WIP
 
-RUN python3 -m pip install -U pip
-RUN python3 -m pip install -U setuptools
-
-# RUN python3 -m pip install torch torchvision torchaudio
-#Install the required packages
-#General python packages
-
-RUN python3 -m pip install matplotlib transformers evaluate datasets scikit-learn tqdm pillow pytorch_lightning jupyter notebook
-#FL frameworks
-##NVFlare
-# RUN git clone https://github.com/NVIDIA/NVFlare.git --branch ${NVF_BRANCH} --single-branch NVFlare
-# RUN cd NVFlare/
-# RUN python3 setup.py install
-# RUN cd -
-RUN python3 -m pip install nvflare
-##Flower
-RUN python3 -m pip install flwr flwr_datasets
-##Pysyft
-# RUN git clone https://github.com/OpenMined/PySyft.git
-# RUN cd PySyft
-# RUN python3 setup.py install
-# RUN python3 setup.py test
-# RUN cd -
-RUN python3 -m pip install syft
-```
-
-You can build the container using the following command
-
-```bash
-docker build -t fedai .
-```
-
-You can run the container using the following command
-
-```bash
-docker run -it --rm --gpus all -v $(pwd):/mnt/workspace/ fedai
-```
-
-### Using a virtual environment
-If you prefer to install the software on your local machine, follow the instructions below. This method is more flexible and allows you to customize the software installation. It also relies on you setting up all your (GPU) drivers and  libraries correctly.
-
-First, create a virtual environment.
-
-```bash
-python3 -m venv fedai
-```
-
-Then, activate the virtual environment.
-
-```bash
-source fedai/bin/activate
-```
-
-Then install the required software
-
-```bash
-python3 -m pip install -U pip
-python3 -m pip install -U setuptools
-python3 -m pip install matplotlib scikit-learn torch torchvision torchaudio transformers evaluate datasets tqdm pillow pytorch_lightning jupyter notebook
-python3 -m pip install nvflare
-python3 -m pip install flwr flwr-datasets
-python3 -m pip install syft
-```
