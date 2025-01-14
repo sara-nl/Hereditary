@@ -49,10 +49,7 @@ class XgbClient(Client):
         # Bagging: extract the last N=num_local_round trees for sever aggregation
         # Cyclic: return the entire model
         bst = (
-            bst_input[
-                bst_input.num_boosted_rounds()
-                - self.num_local_round : bst_input.num_boosted_rounds()
-            ]
+            bst_input[bst_input.num_boosted_rounds() - self.num_local_round : bst_input.num_boosted_rounds()]
             if self.train_method == "bagging"
             else bst_input
         )
@@ -83,6 +80,13 @@ class XgbClient(Client):
         local_model = bst.save_raw("json")
         local_model_bytes = bytes(local_model)
 
+        # Run evaluation on train data
+        eval_results = bst.eval_set(
+            evals=[(self.train_dmatrix, "train")],
+            iteration=bst.num_boosted_rounds() - 1,
+        )
+        rmse = round(float(eval_results.split("\t")[1].split(":")[1]), 4)
+
         return FitRes(
             status=Status(
                 code=Code.OK,
@@ -90,10 +94,13 @@ class XgbClient(Client):
             ),
             parameters=Parameters(tensor_type="", tensors=[local_model_bytes]),
             num_examples=self.num_train,
-            metrics={},
+            metrics={"RMSE": rmse},
         )
 
     def evaluate(self, ins: EvaluateIns) -> EvaluateRes:
+        """
+        Evaluate the model on the validation set and create an EvaluateRes object.
+        """
         # Load global model
         bst = xgb.Booster(params=self.params)
         para_b = bytearray(ins.parameters.tensors[0])

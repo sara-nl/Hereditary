@@ -1,12 +1,11 @@
 """xgboost-CLEF: A Flower / XGBoost app applied to the CLEF dataset."""
 
-from logging import INFO
-from typing import Dict, List, Optional
+from logging import INFO, WARNING
+from typing import Dict, List, Optional, Union, cast
 
-import xgboost as xgb
 from xgboost_comprehensive.task import replace_keys
 
-from flwr.common import Context, Parameters, Scalar
+from flwr.common import Context, Parameters, Scalar, FitRes
 from flwr.common.config import unflatten_dict
 from flwr.common.logger import log
 from flwr.server import ServerApp, ServerAppComponents, ServerConfig
@@ -14,6 +13,7 @@ from flwr.server.client_manager import SimpleClientManager
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.criterion import Criterion
 from flwr.server.strategy import FedXgbBagging, FedXgbCyclic
+from flwr.server.strategy.fedxgb_bagging import aggregate
 
 
 class CyclicClientManager(SimpleClientManager):
@@ -35,15 +35,12 @@ class CyclicClientManager(SimpleClientManager):
         # Sample clients which meet the criterion
         available_cids = list(self.clients)
         if criterion is not None:
-            available_cids = [
-                cid for cid in available_cids if criterion.select(self.clients[cid])
-            ]
+            available_cids = [cid for cid in available_cids if criterion.select(self.clients[cid])]
 
         if num_clients > len(available_cids):
             log(
                 INFO,
-                "Sampling failed: number of available clients"
-                " (%s) is less than number of requested clients (%s).",
+                "Sampling failed: number of available clients" " (%s) is less than number of requested clients (%s).",
                 len(available_cids),
                 num_clients,
             )
@@ -53,12 +50,57 @@ class CyclicClientManager(SimpleClientManager):
         return [self.clients[cid] for cid in available_cids]
 
 
+class CustomFedXgbBagging(FedXgbBagging):
+    """Custom FedXgbBagging strategy that includes metrics aggregation."""
+
+    def aggregate_fit(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        failures: list[Union[tuple[ClientProxy, FitRes], BaseException]],
+    ) -> tuple[Optional[Parameters], dict[str, Scalar]]:
+        """Aggregate fit results using bagging."""
+        if not results:
+            return None, {}
+        # Do not aggregate if there are failures and failures are not accepted
+        if not self.accept_failures and failures:
+            return None, {}
+
+        # Aggregate all the client trees
+        global_model = self.global_model
+        for _, fit_res in results:
+            update = fit_res.parameters.tensors
+            for bst in update:
+                global_model = aggregate(global_model, bst)
+
+        self.global_model = global_model
+
+        # Aggregate custom metrics if aggregation fn was provided
+        metrics_aggregated = {}
+        if self.fit_metrics_aggregation_fn:
+            fit_metrics = [(res.num_examples, res.metrics) for _, res in results]
+            metrics_aggregated = self.fit_metrics_aggregation_fn(fit_metrics)
+        elif server_round == 1:  # Only log this warning once
+            log(WARNING, "No fit_metrics_aggregation_fn provided")
+
+        return (
+            Parameters(tensor_type="", tensors=[cast(bytes, global_model)]),
+            metrics_aggregated,  # Return the aggregated metrics
+        )
+
+
 def evaluate_metrics_aggregation(eval_metrics):
     """Return an aggregated metric (RMSE) for evaluation."""
     total_num = sum([num for num, _ in eval_metrics])
-    rmse_aggregated = (
-        sum([metrics["RMSE"] * num for num, metrics in eval_metrics]) / total_num
-    )
+    rmse_aggregated = sum([metrics["RMSE"] * num for num, metrics in eval_metrics]) / total_num
+    metrics_aggregated = {"RMSE": rmse_aggregated}
+    return metrics_aggregated
+
+
+def fit_metrics_aggregation(fit_metrics):
+    """Return an aggregated metric (RMSE) for training."""
+    total_num = sum([num for num, _ in fit_metrics])
+    rmse_aggregated = sum([metrics["RMSE"] * num for num, metrics in fit_metrics]) / total_num
     metrics_aggregated = {"RMSE": rmse_aggregated}
     return metrics_aggregated
 
@@ -86,12 +128,13 @@ def server_fn(context: Context):
     # Define strategy
     if train_method == "bagging":
         # Bagging training
-        strategy = FedXgbBagging(
+        strategy = CustomFedXgbBagging(
             fraction_fit=fraction_fit,
             fraction_evaluate=fraction_evaluate,
             on_evaluate_config_fn=config_func,
             on_fit_config_fn=config_func,
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation,
+            fit_metrics_aggregation_fn=fit_metrics_aggregation,
             initial_parameters=parameters,
         )
     else:
@@ -100,6 +143,7 @@ def server_fn(context: Context):
             fraction_fit=1.0,
             fraction_evaluate=1.0,
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation,
+            fit_metrics_aggregation_fn=fit_metrics_aggregation,
             on_evaluate_config_fn=config_func,
             on_fit_config_fn=config_func,
             initial_parameters=parameters,
@@ -108,9 +152,7 @@ def server_fn(context: Context):
     config = ServerConfig(num_rounds=num_rounds)
     client_manager = CyclicClientManager() if train_method == "cyclic" else None
 
-    return ServerAppComponents(
-        strategy=strategy, config=config, client_manager=client_manager
-    )
+    return ServerAppComponents(strategy=strategy, config=config, client_manager=client_manager)
 
 
 # Create ServerApp
