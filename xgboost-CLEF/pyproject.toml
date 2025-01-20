@@ -54,3 +54,8 @@ options.backend.client-resources.num-cpus = 2
 options.num-supernodes = 2
 address="127.0.0.1:9093"
 insecure=true
+
+[tool.flwr.federations.surfsuperlink]
+options.num-supernodes = 2
+address="IP_HERE:9093"
+insecure=true

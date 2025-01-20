@@ -1,15 +1,20 @@
 # CLEF xgboost example
 In this example we apply federated xgboost to the CLEF dataset, specifically task c at M0, which means only data that was available at intake is used for training the model. The code is adapted from the Flower example [xgboost-comprehensive](https://github.com/adap/flower/tree/main/examples/xgboost-comprehensive).
 
-Before we can run the experiment, we first need to download CLEf. See the main repo of this branch for instructions. After that, we will need to create paritions of the data. This is done by running the `partition_clef.py` script.
-```
+
+# Preparing the data
+
+Before we can run the experiment, we first need to download the CLEF dataset. See the main repo of this branch for instructions. After that, we will need to create paritions of the data. This is done by running the `partition_clef.py` script.
+```shell
 python partition_clef.py --data_path <path_to_clef_data> --partitions <num_partitions>
-e.g.
+```
+For example:
+```bash
 python partition_clef.py --data_path /Users/hereditary_data/clef_data/retrospective/ALS/CSV/data/datasetC/ --partitions 2,4,6,10
 ```
 
 To run the experiment as a simulation, first follow the one-time setup instructions.
-```
+```bash
 # Create a new virtual environment if desired:
 # python -m venv fed-ai-venv
 # source fed-ai-venv/bin/activate
@@ -20,13 +25,13 @@ pip install -e .
 
 # Running the code
 Before you can run the code, we need to export an environment variable to indicate where the data is located.
-```
+```bash
 export CLEF_DATA_PATH=<path_to_clef_data>
 ```
 
 ## Running the code in simulation mode
 You can run the experiment using the following command:
-```
+```bash
 flwr run .
 ```
 
@@ -34,35 +39,77 @@ flwr run .
 This section will explain how to run the code in a federated setting, on a single machine. If you wish to run the code on multiple machines, you can do so, but you will need to make sure that the devices are able to communicate with each other and make sure that you pass the right IP addresses and ports to the different components.
 
 First, go into the pyproject.toml file and change the default federation from local-simulation to local-superlink.
-```
+```bash
 [tool.flwr.federations]
 default = "local-superlink"
 ```
 
 ### starting all components
 Now, open four terminals and run the following commands in each terminal:
-```
+```bash
 flower-superlink --insecure
 ```
-```
+```bash
 export CLEF_DATA_PATH=<path_to_clef_data>
 flower-supernode --insecure --node-config "num-partitions=2 partition-id=0"
 ```
-We will need to make sure the second supernode is using a different port for the clientappio-api-address.
-```
+We will need to make sure the second supernode is using a different port for the clientappio-api-address, as we can't use the same port for both supernodes.
+```bash
 export CLEF_DATA_PATH=<path_to_clef_data>
 flower-supernode --insecure --clientappio-api-address 127.0.0.1:9095 --node-config "num-partitions=2 partition-id=1"
 ```
 Once all the supernodes are running, you should see frequent logs in the supernode along the lines of: `INFO :      [Fleet.PullTaskIns] node_id=11258183141104355277`
 
 Now we are ready to run the experiment.
-```
+```bash
 flwr run . --stream --run-config "train-method='bagging' num-server-rounds=5 centralised-eval=false"
 ```
 
-Instructions on how to connect the superlink and nodes without using the `--insecure` flag will be added here soon.
 
-### Some tricks
+# Running the code in a federated setting on multiple machines
+
+### Starting the superlink
+First, start the superlink on the the server machine. On this machine, you should make sure that these ports are open to incoming TCP connections:
+* 9091
+* 9092
+* 9093
+Then, start the superlink as follows:
+```bash
+flower-superlink --insecure
+```
+
+### Starting the supernodes
+Now we can start the supernodes on the client machines, no open ports should be required.
+An example command would be:
+```bash
+flower-supernode --insecure --superlink IP_HERE:9092 --node-config "num-partitions=2 partition-id=0"
+```
+
+Your connection to the superlink is successful if you see logs like this:
+```bash
+flower-supernode --insecure --superlink IP_HERE:9092 --node-config "num-partitions=2 partition-id=0"
+INFO :      Starting Flower SuperNode
+WARNING :   Option `--insecure` was set. Starting insecure HTTP channel to IP_HERE:9092.
+INFO :      Starting Flower ClientAppIo gRPC server on 0.0.0.0:9094
+```
+
+If your connection is not successful, you will see an error, or repetitive logs about retrying to connect like so:
+```
+WARNING :   Connection attempt failed, retrying in 1.93 seconds
+```
+
+
+### submitting an experiment
+If you wish to submit an experiment to this superlink and all connected clients, you can do so by running the following command, where `surfsuperlink` is the name of the federation defined in the `pyproject.toml` file. 
+```bash
+flwr run . surfsuperlink --stream
+```
+
+## Running on multiple machines in a secure setting:
+Instructions on how to connect the superlink and nodes without using the `--insecure` flag will be added here soon. This can be done by using TLS certificates that need to be generated and distributed first. 
+
+
+# Some tricks
 If you wish to see all logs when running this experiment as a simulation, export the below variable. This will ensure you will see all logs, if not set, the logs coming from the same line will be deduplicated, even when they contain different information.
 ```
 export RAY_DEDUP_LOGS=0
