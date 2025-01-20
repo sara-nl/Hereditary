@@ -36,7 +36,11 @@ flwr run .
 ```
 
 # Running the code in a federated setting
-This section will explain how to run the code in a federated setting, on a single machine. If you wish to run the code on multiple machines, you can do so, but you will need to make sure that the devices are able to communicate with each other and make sure that you pass the right IP addresses and ports to the different components.
+This section will explain how to run the code in a federated setting, on a single machine. If you wish to run the code on multiple machines, you can do so, but you will need to make sure that the devices are able to communicate with each other and make sure that you pass the right IP addresses and ports to the different components. Some terminology:
+* superlink: the centralised server that manages the supernodes and aggregates the updates and results from the supernodes.
+* supernode: a node that is running a client, with localised data.
+* federation: the set of supernodes and the superlink.
+
 
 First, go into the pyproject.toml file and change the default federation from local-simulation to local-superlink.
 ```bash
@@ -58,7 +62,7 @@ We will need to make sure the second supernode is using a different port for the
 export CLEF_DATA_PATH=<path_to_clef_data>
 flower-supernode --insecure --clientappio-api-address 127.0.0.1:9095 --node-config "num-partitions=2 partition-id=1"
 ```
-Once all the supernodes are running, you should see frequent logs in the supernode along the lines of: `INFO :      [Fleet.PullTaskIns] node_id=11258183141104355277`
+Once all the supernodes are running, you should see frequent logs in the superlink along the lines of: `INFO :      [Fleet.PullTaskIns] node_id=11258183141104355277`
 
 Now we are ready to run the experiment.
 ```bash
