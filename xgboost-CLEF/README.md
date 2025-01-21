@@ -109,8 +109,37 @@ If you wish to submit an experiment to this superlink and all connected clients,
 flwr run . surfsuperlink --stream
 ```
 
-## Running on multiple machines in a secure setting:
-Instructions on how to connect the superlink and nodes without using the `--insecure` flag will be added here soon. This can be done by using TLS certificates that need to be generated and distributed first. 
+## Running on multiple machines in a secure setting
+### This section is still a WIP
+In order to run the code in a secure setting, we will need to take care of two aspects:
+1. Ensure that traffic between the superlink and the supernodes is encrypted using TLS certificates.
+2. Ensure that only authorized supernodes are allowed to connect to the superlink, by providing supernodes a key and provide the superlink a list of authorized keys.
+
+See the `generating_keys` README.md for more information on how to generate the keys and certificates before continuing.
+
+
+### Starting the superlink
+Starting the superlink now requires some additional flags:
+```bash
+flower-superlink \
+    --ssl-ca-certfile certificates/ca.crt \
+    --ssl-certfile certificates/server.pem \
+    --ssl-keyfile certificates/server.key \
+    --auth-list-public-keys keys/client_public_keys.csv \
+    --auth-superlink-private-key keys/server_credentials \
+    --auth-superlink-public-key keys/server_credentials.pub
+```
+
+Starting a supernode:
+```bash
+flower-supernode \
+    --root-certificates certificates/ca.crt \
+    --superlink IP_HERE:9092 \
+    --clientappio-api-address 0.0.0.0:9094 \
+    --node-config="partition-id=0 num-partitions=2" \
+    --auth-supernode-private-key keys/client_credentials_1 \
+    --auth-supernode-public-key keys/client_credentials_1.pub
+```
 
 
 # Some tricks
