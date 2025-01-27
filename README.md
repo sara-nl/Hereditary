@@ -28,3 +28,17 @@ See the xgboost-CLEF directory for the code to partition the data and run the fe
 ## Federated learning with FETS
 WIP
 
+## Server setup
+During the workshop we will use a server hosted on the SURF research cloud as the SuperLink for our experiments. 
+When creating this server (type ubuntu 2204 sudo enabled), follow these steps:
+```
+sudo apt update
+sudo apt install python3.11
+cd data/VOLUME_NAME
+python3.11 -m venv flwr-venv
+source flwr-venv/bin/activate
+pip install flwr==1.14.0
+```
+
+After following these steps, you should be able to start the superlink, for the specific command see the readme of any experiment in this branch. 
+

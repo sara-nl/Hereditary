@@ -143,10 +143,15 @@ flower-supernode \
 
 
 # Some tricks
+
+#### logs
 If you wish to see all logs when running this experiment as a simulation, export the below variable. This will ensure you will see all logs, if not set, the logs coming from the same line will be deduplicated, even when they contain different information.
 ```
 export RAY_DEDUP_LOGS=0
 ```
+
+#### Dependencies
+When submitting an experiment, all code is automatically shipped to the supernodes. However, if you make a change to the dependencies, these are, from a security perspective, not automatically installed. You will need to manually install the dependencies on the supernodes.
 
 
 <br>
