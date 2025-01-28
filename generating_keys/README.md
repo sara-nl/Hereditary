@@ -28,9 +28,16 @@ The superlink will need the following files:
 * `keys/server_credentials`: the server private key
 * `keys/server_credentials.pub`: the server public key
 
+### Package the keys and certificates
+To create zipfiles containing a single set of keys and the root certificate, you can use the `create_client_zips.sh` script.
+```bash
+./create_client_zips.sh 20
+```
+This will create 20 zipfiles, each containing the keys and the root certificate, assuming 20 keys were generated. The zip files can then be distributed to the owners of the supernodes.
 
-resources:
+### resources:
 * https://flower.ai/docs/framework/how-to-enable-tls-connections.html
 * https://flower.ai/docs/examples/flower-authentication.html
 * https://flower.ai/docs/framework/how-to-authenticate-supernodes.html
+
 
