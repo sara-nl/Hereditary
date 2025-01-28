@@ -77,6 +77,7 @@ First, start the superlink on the the server machine. On this machine, you shoul
 * 9091
 * 9092
 * 9093
+
 Then, start the superlink as follows:
 ```bash
 flower-superlink --insecure
@@ -110,12 +111,11 @@ flwr run . surfsuperlink --stream
 ```
 
 ## Running on multiple machines in a secure setting
-### This section is still a WIP
 In order to run the code in a secure setting, we will need to take care of two aspects:
 1. Ensure that traffic between the superlink and the supernodes is encrypted using TLS certificates.
 2. Ensure that only authorized supernodes are allowed to connect to the superlink, by providing supernodes a key and provide the superlink a list of authorized keys.
 
-See the `generating_keys` README.md for more information on how to generate the keys and certificates before continuing.
+See the README.md in the `generating_keys` folder for more information on how to generate the keys and certificates before continuing.
 
 
 ### Starting the superlink
