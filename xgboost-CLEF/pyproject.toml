@@ -58,4 +58,4 @@ insecure=true
 [tool.flwr.federations.surfsuperlink]
 options.num-supernodes = 2
 address="IP_HERE:9093"
-insecure=true
+root-certificates = "PATH_TO/certificates/ca.crt"
