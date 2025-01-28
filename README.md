@@ -26,7 +26,7 @@ See the xgboost-CLEF directory for the code to partition the data and run the fe
 
 
 ## Federated learning with FETS
-WIP
+See the FETS directory for the code to run the federated learning experiments. 
 
 ## Server setup
 During the workshop we will use a server hosted on the SURF research cloud as the SuperLink for our experiments. 
@@ -41,4 +41,5 @@ pip install flwr==1.14.0
 ```
 
 After following these steps, you should be able to start the superlink, for the specific command see the readme of any experiment in this branch. 
+Keep in mind that if the serverside of your experiment is using specific packages, these need to be manually installed on the SuperLink.
 
