@@ -10,14 +10,15 @@ python partition_clef.py --data_path <path_to_clef_data> --partitions <num_parti
 ```
 For example:
 ```bash
-python partition_clef.py --data_path /Users/hereditary_data/clef_data/retrospective/ALS/CSV/data/datasetC/ --partitions 2,4,6,10
+python partition_clef.py --data_path /Users/hereditary_data/clef_data/retrospective/ALS/CSV/data/datasetC/ --partitions 2,4,6,8,10
+python partition_clef.py --data_path /Users/hereditary_data/clef_data/retrospective/ALS/CSV/data/datasetC/ --partitions 2,4,6,8,10 --output_dir /Users/hereditary_data/clef_data/retrospective/ALS/CSV/data/datasetC/vertical_fl/ --method by_time
 ```
 
 To run the experiment as a simulation, first follow the one-time setup instructions.
 ```bash
 # Create a new virtual environment if desired:
-# python -m venv fed-ai-venv
-# source fed-ai-venv/bin/activate
+# python -m venv CLEF-venv
+# source CLEF-venv/bin/activate
 
 # Install the dependencies
 pip install -e .

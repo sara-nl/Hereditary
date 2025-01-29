@@ -16,6 +16,8 @@ pip install -e .
 Before we can run the experiment, we will need to set the environment variable indicating the path to the FETS data.
 ```bash
 export FETS_DATA_DIR=/path/to/FETS/data
+# e.g.
+export FETS_DATA_DIR=/Users/d0uwe/hereditary_data/FETS_data/MICCAI_FeTS2022_TrainingData/
 ```
 Keep in mind that the SuperNodes in this experiment will need to have access to a GPU with at least 20GB of memory.
 
