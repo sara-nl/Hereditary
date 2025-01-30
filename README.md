@@ -28,6 +28,9 @@ See the xgboost-CLEF directory for the code to partition the data and run the fe
 ## Federated learning with FETS
 See the FETS directory for the code to run the federated learning experiments. 
 
+## Federated learning with Glaucoma data
+See this repo: https://github.com/QTIM-Lab/Hereditary_glaucoma/tree/main
+
 ## Server setup
 During the workshop we will use a server hosted on the SURF research cloud as the SuperLink for our experiments. 
 When creating this server (type ubuntu 2204 sudo enabled), follow these steps:
