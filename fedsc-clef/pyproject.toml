@@ -6,6 +6,7 @@ license = "Apache-2.0"
 dependencies = [
     "flwr[simulation]>=1.13.1",
     "flwr-datasets>=0.3.0",
+    "scikit-learn>=0.24.2",
 ]
 
 [tool.flwr.app]
@@ -16,7 +17,7 @@ serverapp = "server_app:app"
 clientapp = "client_app:app"
 
 [tool.flwr.federations.local-superlink]
-options.num-supernodes = 1
+options.num-supernodes = 2
 address="127.0.0.1:9093"
 insecure=true
 

@@ -21,6 +21,7 @@ from flwr.server import ServerConfig
 from flwr.server.client_manager import ClientManager
 from flwr.server.client_proxy import ClientProxy
 from task import load_clef_data_for_spectral_clustering, federated_laplacian_consensus, federated_laplacian_approximation, secure_eigen_decomposition
+
 class EnhancedFedSCStrategy(Strategy):
     def __init__(self, n_clusters: int = 3, num_rounds: int = 5):
         super().__init__()
@@ -103,6 +104,7 @@ def server_fn(context: Context):
     config = ServerConfig(num_rounds=3)
     components = ServerAppComponents(
         config=config,
+        strategy = EnhancedFedSCStrategy(),
         client_manager=SimpleClientManager(),
     )
     return components
