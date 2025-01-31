@@ -4,7 +4,7 @@ This directory contains the scripts needed to generate the keys and certificates
 ### Encrypt the traffic
 To create a self-signed TLS certificate, you can run the following command in the `generating_keys` directory:
 ```bash
-bash generate_certs.sh
+bash generate_cert.sh
 ```
 The keys will be stored in the a directory called `certificates`.
 
