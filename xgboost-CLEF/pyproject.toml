@@ -56,6 +56,6 @@ address="127.0.0.1:9093"
 insecure=true
 
 [tool.flwr.federations.surfsuperlink]
-options.num-supernodes = 2
-address="IP_HERE:9093"
-root-certificates = "PATH_TO/certificates/ca.crt"
+options.num-supernodes = 10
+address="hereditary.soil.surf.nl:9093"
+root-certificates = "/Users/damian/projects/Hereditary/certificate/ca.crt"

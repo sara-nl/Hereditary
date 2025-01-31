@@ -135,9 +135,9 @@ Starting a supernode:
 ```bash
 flower-supernode \
     --root-certificates certificates/ca.crt \
-    --superlink IP_HERE:9092 \
+    --superlink hereditary.soil.surf.nl:9092 \
     --clientappio-api-address 0.0.0.0:9094 \
-    --node-config="partition-id=0 num-partitions=2" \
+    --node-config="partition-id=0 num-partitions=10" \
     --auth-supernode-private-key keys/client_credentials_1 \
     --auth-supernode-public-key keys/client_credentials_1.pub
 ```

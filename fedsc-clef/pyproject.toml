@@ -1,0 +1,26 @@
+[project]
+name = "fedsc-clef"
+version = "1.0.0"
+description = "Federated spectral clustering with Flower applied to CLEF dataset"
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.13.1",
+    "flwr-datasets>=0.3.0",
+]
+
+[tool.flwr.app]
+publisher = ""
+
+[tool.flwr.app.components]
+serverapp = "server_app:app"
+clientapp = "client_app:app"
+
+[tool.flwr.federations.local-superlink]
+options.num-supernodes = 1
+address="127.0.0.1:9093"
+insecure=true
+
+[tool.flwr.federations.surfsuperlink]
+options.num-supernodes = 10
+address="hereditary.soil.surf.nl:9093"
+root-certificates = "/Users/damian/projects/Hereditary/certificate/ca.crt"
