@@ -4,14 +4,14 @@ This directory contains the scripts needed to generate the keys and certificates
 ### Encrypt the traffic
 To create a self-signed TLS certificate, you can run the following command in the `generating_keys` directory:
 ```bash
-python generate_keys.py
+bash generate_certs.sh
 ```
 The keys will be stored in the a directory called `certificates`.
 
 ### Create authentication keys
 Then, to create authentication keys for the supernodes, you can run the following command in the `generating_keys` directory:
 ```bash
-python generate_auth_keys.py 20
+bash generate_auth_keys.sh 20
 ```
 This will create 20 authentication keys, which will be used to authenticate the supernodes to the superlink, stored in the `keys` directory.
 
@@ -31,7 +31,7 @@ The superlink will need the following files:
 ### Package the keys and certificates
 To create zipfiles containing a single set of keys and the root certificate, you can use the `create_client_zips.sh` script.
 ```bash
-./create_client_zips.sh 20
+bash create_client_zips.sh 20
 ```
 This will create 20 zipfiles, each containing the keys and the root certificate, assuming 20 keys were generated. The zip files can then be distributed to the owners of the supernodes.
 
