@@ -94,13 +94,14 @@ class XgbClient(Client):
             ),
             parameters=Parameters(tensor_type="", tensors=[local_model_bytes]),
             num_examples=self.num_train,
-            metrics={"RMSE": rmse},
+            metrics={"RMSE": rmse, "round": global_round},
         )
 
     def evaluate(self, ins: EvaluateIns) -> EvaluateRes:
         """
         Evaluate the model on the validation set and create an EvaluateRes object.
         """
+        global_round = int(ins.config["global_round"])
         # Load global model
         bst = xgb.Booster(params=self.params)
         para_b = bytearray(ins.parameters.tensors[0])
@@ -120,7 +121,7 @@ class XgbClient(Client):
             ),
             loss=rmse,
             num_examples=self.num_val,
-            metrics={"RMSE": rmse},
+            metrics={"RMSE": rmse, "round": global_round},
         )
 
 

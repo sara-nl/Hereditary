@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Union, cast
 
 from xgboost_comprehensive.task import replace_keys
 
-from flwr.common import Context, Parameters, Scalar, FitRes
+from flwr.common import Context, Parameters, Scalar, FitRes, EvaluateRes
 from flwr.common.config import unflatten_dict
 from flwr.common.logger import log
 from flwr.server import ServerApp, ServerAppComponents, ServerConfig
@@ -14,6 +14,7 @@ from flwr.server.client_proxy import ClientProxy
 from flwr.server.criterion import Criterion
 from flwr.server.strategy import FedXgbBagging, FedXgbCyclic
 from flwr.server.strategy.fedxgb_bagging import aggregate
+from tensorboardX import SummaryWriter
 
 
 class CyclicClientManager(SimpleClientManager):
@@ -50,8 +51,25 @@ class CyclicClientManager(SimpleClientManager):
         return [self.clients[cid] for cid in available_cids]
 
 
+class MetricsLogger:
+    """Handles logging of metrics to TensorBoard."""
+
+    def __init__(self, run_id: str):
+        self.run_id = run_id
+        self.writer = SummaryWriter(f"runs/run_{run_id}")
+
+    def log_metrics(self, metrics_type: str, metrics_value: float, round_num: int):
+        """Log metrics to TensorBoard."""
+        self.writer.add_scalar(f"{metrics_type}/rmse", metrics_value, round_num)
+        self.writer.flush()
+
+
 class CustomFedXgbBagging(FedXgbBagging):
     """Custom FedXgbBagging strategy that includes metrics aggregation."""
+
+    def __init__(self, *args, run_id: str, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.metrics_logger = MetricsLogger(run_id)
 
     def aggregate_fit(
         self,
@@ -80,13 +98,66 @@ class CustomFedXgbBagging(FedXgbBagging):
         if self.fit_metrics_aggregation_fn:
             fit_metrics = [(res.num_examples, res.metrics) for _, res in results]
             metrics_aggregated = self.fit_metrics_aggregation_fn(fit_metrics)
+
+            # Log training metrics if available
+            if "RMSE" in metrics_aggregated:
+                self.metrics_logger.log_metrics("train", metrics_aggregated["RMSE"], server_round)
         elif server_round == 1:  # Only log this warning once
             log(WARNING, "No fit_metrics_aggregation_fn provided")
 
         return (
             Parameters(tensor_type="", tensors=[cast(bytes, global_model)]),
-            metrics_aggregated,  # Return the aggregated metrics
+            metrics_aggregated,
         )
+
+    def aggregate_evaluate(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, EvaluateRes]],
+        failures: list[Union[tuple[ClientProxy, EvaluateRes], BaseException]],
+    ):
+        code, aggregated_metrics = super().aggregate_evaluate(server_round, results, failures)
+        if "RMSE" in aggregated_metrics:
+            self.metrics_logger.log_metrics("eval", aggregated_metrics["RMSE"], server_round)
+        return code, aggregated_metrics
+
+
+class CustomFedXgbCyclic(FedXgbCyclic):
+    """Custom FedXgbCyclic strategy that includes metrics aggregation."""
+
+    def __init__(self, *args, run_id: str, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.metrics_logger = MetricsLogger(run_id)
+
+    def aggregate_fit(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        failures: list[Union[tuple[ClientProxy, FitRes], BaseException]],
+    ):
+        code, _ = super().aggregate_fit(server_round, results, failures)
+        # Aggregate custom metrics if aggregation fn was provided
+        metrics_aggregated = {}
+        if self.fit_metrics_aggregation_fn:
+            fit_metrics = [(res.num_examples, res.metrics) for _, res in results]
+            metrics_aggregated = self.fit_metrics_aggregation_fn(fit_metrics)
+
+            # Log training metrics if available
+            if "RMSE" in metrics_aggregated:
+                self.metrics_logger.log_metrics("train", metrics_aggregated["RMSE"], server_round)
+
+        return code, metrics_aggregated
+
+    def aggregate_evaluate(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, EvaluateRes]],
+        failures: list[Union[tuple[ClientProxy, EvaluateRes], BaseException]],
+    ):
+        code, aggregated_metrics = super().aggregate_evaluate(server_round, results, failures)
+        if "RMSE" in aggregated_metrics:
+            self.metrics_logger.log_metrics("eval", aggregated_metrics["RMSE"], server_round)
+        return code, aggregated_metrics
 
 
 def evaluate_metrics_aggregation(eval_metrics):
@@ -94,6 +165,13 @@ def evaluate_metrics_aggregation(eval_metrics):
     total_num = sum([num for num, _ in eval_metrics])
     rmse_aggregated = sum([metrics["RMSE"] * num for num, metrics in eval_metrics]) / total_num
     metrics_aggregated = {"RMSE": rmse_aggregated}
+
+    # Get the round number from the first client's metrics
+    if eval_metrics and len(eval_metrics) > 0:
+        metrics = eval_metrics[0][1]
+        if "round" in metrics:
+            metrics_aggregated["round"] = metrics["round"]
+
     return metrics_aggregated
 
 
@@ -102,6 +180,13 @@ def fit_metrics_aggregation(fit_metrics):
     total_num = sum([num for num, _ in fit_metrics])
     rmse_aggregated = sum([metrics["RMSE"] * num for num, metrics in fit_metrics]) / total_num
     metrics_aggregated = {"RMSE": rmse_aggregated}
+
+    # Get the round number from the first client's metrics
+    if fit_metrics and len(fit_metrics) > 0:
+        metrics = fit_metrics[0][1]
+        if "round" in metrics:
+            metrics_aggregated["round"] = metrics["round"]
+
     return metrics_aggregated
 
 
@@ -120,7 +205,7 @@ def server_fn(context: Context):
     fraction_fit = cfg["fraction_fit"]
     fraction_evaluate = cfg["fraction_evaluate"]
     train_method = cfg["train_method"]
-    params = cfg["params"]
+    run_id = context.run_id
 
     # Init an empty Parameter
     parameters = Parameters(tensor_type="", tensors=[])
@@ -136,10 +221,11 @@ def server_fn(context: Context):
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation,
             fit_metrics_aggregation_fn=fit_metrics_aggregation,
             initial_parameters=parameters,
+            run_id=run_id,
         )
     else:
         # Cyclic training
-        strategy = FedXgbCyclic(
+        strategy = CustomFedXgbCyclic(
             fraction_fit=1.0,
             fraction_evaluate=1.0,
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation,
@@ -147,6 +233,7 @@ def server_fn(context: Context):
             on_evaluate_config_fn=config_func,
             on_fit_config_fn=config_func,
             initial_parameters=parameters,
+            run_id=run_id,
         )
 
     config = ServerConfig(num_rounds=num_rounds)
