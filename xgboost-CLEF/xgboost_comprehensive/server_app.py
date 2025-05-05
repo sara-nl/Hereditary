@@ -1,5 +1,5 @@
 """xgboost-CLEF: A Flower / XGBoost app applied to the CLEF dataset."""
-
+import time
 from logging import INFO, WARNING
 from typing import Dict, List, Optional, Union, cast
 
@@ -62,6 +62,11 @@ class MetricsLogger:
         """Log metrics to TensorBoard."""
         self.writer.add_scalar(f"{metrics_type}/rmse", metrics_value, round_num)
         self.writer.flush()
+        
+    def close(self):
+        """Close the TensorBoard writer."""
+        if hasattr(self, 'writer'):
+            self.writer.close()
 
 
 class CustomFedXgbBagging(FedXgbBagging):
@@ -70,6 +75,7 @@ class CustomFedXgbBagging(FedXgbBagging):
     def __init__(self, *args, run_id: str, **kwargs):
         super().__init__(*args, **kwargs)
         self.metrics_logger = MetricsLogger(run_id)
+        self.start_time = time.time()
 
     def aggregate_fit(
         self,
@@ -105,6 +111,12 @@ class CustomFedXgbBagging(FedXgbBagging):
         elif server_round == 1:  # Only log this warning once
             log(WARNING, "No fit_metrics_aggregation_fn provided")
 
+        # Log training time
+        training_time = time.time() - self.start_time
+        log_string = f"Total training time: {training_time} server round fit: {server_round}"
+        log(INFO, log_string)
+        self.metrics_logger.log_metrics("time_since_start_fit", training_time, server_round)
+
         return (
             Parameters(tensor_type="", tensors=[cast(bytes, global_model)]),
             metrics_aggregated,
@@ -119,6 +131,12 @@ class CustomFedXgbBagging(FedXgbBagging):
         code, aggregated_metrics = super().aggregate_evaluate(server_round, results, failures)
         if "RMSE" in aggregated_metrics:
             self.metrics_logger.log_metrics("eval", aggregated_metrics["RMSE"], server_round)
+
+        # Log training time
+        training_time = time.time() - self.start_time
+        log_string = f"Total training time: {training_time} server round eval: {server_round}"
+        log(INFO, log_string)
+        self.metrics_logger.log_metrics("time_since_start_eval", training_time, server_round)
         return code, aggregated_metrics
 
 

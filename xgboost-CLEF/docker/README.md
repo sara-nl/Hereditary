@@ -34,6 +34,11 @@ docker container create -i -t --name FLW flworkshop
 docker container start  --attach -i FLW
 ```
 
+When starting the container to run a flwr superlink (the server), then we need to make sure the appropriate ports are opened. 
+```bash
+docker container create -i -t --publish 9091:9091 --publish 9092:9092 --publish 9093:9093 --name FLW flworkshop
+```
+
 ## Run example from bash
 
 To run the example from bash for the dataset C with two partitions (which is included in the image building):
