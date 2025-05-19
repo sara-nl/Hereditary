@@ -13,7 +13,7 @@ docker build -t flworkshop_4 .
 Creating the container:
 
 ```bash
-docker container create -i -t --gpus=all --name FLW flworkshop_4 
+docker container create -i -t --gpus=all --name FLW_4 flworkshop_4 
 ```
 
 ## CPU Build
@@ -25,13 +25,13 @@ docker build -t flworkshop_4 .
 Creating the container:
 
 ```bash
-docker container create -i -t --name FLW flworkshop_4 
+docker container create -i -t --name FLW_4 flworkshop_4 
 ```
 
 ## Run the container (bash)
 
 ```bash
-docker container start  --attach -i FLW
+docker container start  --attach -i FLW_4
 ```
 
 When starting the container to run a flwr superlink (the server), then we need to make sure the appropriate ports are opened. 

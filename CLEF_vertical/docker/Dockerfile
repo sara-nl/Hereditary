@@ -38,7 +38,7 @@ RUN pip install -e .
 RUN unzip data.zip
 RUN rm data.zip
 
-ENV CLEF_DATA_PATH=/hereditary/Hereditary/xgboost-CLEF/data/CLEF/BRAINTEASER_ALS_MS_datasets/retrospective/ALS/CSV/data/datasetC/
+ENV CLEF_DATA_PATH=/hereditary/Hereditary/CLEF_vertical/data/CLEF/BRAINTEASER_ALS_MS_datasets/retrospective/ALS/CSV/data/datasetC/
 
 WORKDIR /hereditary
 VOLUME /hereditary
