@@ -36,7 +36,7 @@ docker container start  --attach -i FLW_4
 
 When starting the container to run a flwr superlink (the server), then we need to make sure the appropriate ports are opened. 
 ```bash
-docker container create -i -t --publish 9091:9091 --publish 9092:9092 --publish 9093:9093 --name FLW flworkshop_4
+docker container create -i -t --publish 9091:9091 --publish 9092:9092 --publish 9093:9093 --name FLW_4 flworkshop_4
 ```
 
 ## Run example from bash

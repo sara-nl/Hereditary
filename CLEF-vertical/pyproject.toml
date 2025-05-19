@@ -38,7 +38,7 @@ clinical-hidden-sizes = "32"
 combined-hidden-sizes = "16,8"
 
 [tool.flwr.federations]
-default = "local-superlink"
+default = "local-simulation"
 
 [tool.flwr.federations.local-simulation]
 options.num-supernodes = 2
