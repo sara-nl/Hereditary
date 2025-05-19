@@ -30,15 +30,15 @@ RUN git clone https://github.com/sara-nl/Hereditary.git
 WORKDIR /hereditary/Hereditary
 RUN git checkout fourth_workshop
 
-COPY data.zip /hereditary/Hereditary/CLEF_vertical
+COPY data.zip /hereditary/Hereditary/CLEF-vertical
 
-WORKDIR /hereditary/Hereditary/CLEF_vertical
+WORKDIR /hereditary/Hereditary/CLEF-vertical
 
 RUN pip install -e .
 RUN unzip data.zip
 RUN rm data.zip
 
-ENV CLEF_DATA_PATH=/hereditary/Hereditary/CLEF_vertical/data/CLEF/BRAINTEASER_ALS_MS_datasets/retrospective/ALS/CSV/data/datasetC/
+ENV CLEF_DATA_PATH=/hereditary/Hereditary/CLEF-vertical/data/CLEF/BRAINTEASER_ALS_MS_datasets/retrospective/ALS/CSV/data/datasetC/
 
 WORKDIR /hereditary
 VOLUME /hereditary
