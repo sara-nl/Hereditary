@@ -97,6 +97,8 @@ class FlowerClient(NumPyClient):
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=model_config["learning_rate"])
         self.embedding = None
         self.client_state = context.state
+
+        # Create the persistent ArrayRecords to store embeddings and weights if they do not exist yet
         if "embeddings" not in self.client_state.array_records:
             self.client_state.array_records["embeddings"] = ArrayRecord()
             embeddings_rec = self.client_state.array_records["embeddings"]
@@ -114,7 +116,8 @@ class FlowerClient(NumPyClient):
                 self.optimizer.state_dict(), self.network_type.value, WeightType.OPTIMIZER.value, state_dict_rec
             )
 
-        # Load the model and optimizer state dicts (the client is re-intialized at every call)
+        # Load the model and optimizer state dicts. The client is re-initialized at every call.
+        # so we do not need to load the state dicts in fit or evaluate.
         loaded_model_state_dict = get_weights(state_dict_rec, self.network_type.value, WeightType.MODEL.value)
         loaded_optim_state_dict = get_weights(state_dict_rec, self.network_type.value, WeightType.OPTIMIZER.value)
         self.net.load_state_dict(loaded_model_state_dict)
@@ -128,19 +131,22 @@ class FlowerClient(NumPyClient):
 
         self.net.train()
 
-        # Process the gradients of the previous round to update the model
-        gradients = get_gradients_from_parameters(config, self.network_type)
         if curr_round != 1:
+            # Process the gradients of the previous round to update the model
+            gradients = get_gradients_from_parameters(config, self.network_type)
+
             # TODO: we can retrieve the old gradient correctly, but calling backward on it does not work
             # thus we recalculate the embedding, but it is not efficient.
-            old_embeddings = embeddings_rec[f"embedding_{str(self.network_type)}"]
-            old_embeddings = torch.tensor(old_embeddings.numpy(), requires_grad=True)
+            # old_embeddings = embeddings_rec[f"embedding_{str(self.network_type)}"]
+            # old_embeddings = torch.tensor(old_embeddings.numpy(), requires_grad=True)
             # old_embeddings.backward(torch.tensor(gradients))
 
+            # Recalculate the embeddings for the old batch
             old_batch_idx = embeddings_rec[f"batch_idx_{str(self.network_type)}"].numpy()
             old_embeddings_recalculated = self.net(self.train_dataset[old_batch_idx])
-            old_embeddings_recalculated.backward(torch.tensor(gradients))
 
+            # Update the model with the gradients
+            old_embeddings_recalculated.backward(torch.tensor(gradients))
             self.optimizer.step()
             self.optimizer.zero_grad()
             store_weights(self.net.state_dict(), self.network_type.value, WeightType.MODEL.value, state_dict_rec)
@@ -148,13 +154,12 @@ class FlowerClient(NumPyClient):
                 self.optimizer.state_dict(), self.network_type.value, WeightType.OPTIMIZER.value, state_dict_rec
             )
 
-        self.optimizer.zero_grad()
-
         # process the new batch
         batch_idx = config["batch_idx"].split(",")
         batch_idx = [int(idx) for idx in batch_idx]
         batch = self.train_dataset[batch_idx]
 
+        # Store and return the embedding for the current batch
         embedding = self.net(batch)
         embedding_numpy = embedding.cpu().detach().numpy()
         embeddings_rec[f"embedding_{str(self.network_type)}"] = Array(embedding_numpy)
@@ -168,15 +173,12 @@ class FlowerClient(NumPyClient):
         return fake_params, 1, metrics_dict
 
     def evaluate(self, parameters, config):
-        state_dict_rec = self.client_state.array_records["state_dicts"]
-        loaded_model_state_dict = get_weights(state_dict_rec, self.network_type.value, WeightType.MODEL.value)
-        loaded_optim_state_dict = get_weights(state_dict_rec, self.network_type.value, WeightType.OPTIMIZER.value)
-        self.net.load_state_dict(loaded_model_state_dict)
-        self.optimizer.load_state_dict(loaded_optim_state_dict)
-
+        # Create embeddings for the validation dataset
         self.net.eval()
         embeddings = self.net(self.val_dataset)
         embedding_bytes = pickle.dumps(embeddings.cpu().detach())
+
+        # Pack the metrics dictionary with the embedding and return it
         metrics_dict = {"type": self.network_type.value, "embedding": embedding_bytes}
         # returning a fake loss, since the real loss is calculated in the server
         return 0.0, 1, metrics_dict

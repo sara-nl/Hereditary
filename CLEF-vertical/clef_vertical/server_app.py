@@ -48,7 +48,7 @@ class SotaStrategy(Strategy):
         self.clinical_gradients = None
 
     def initialize_parameters(self, client_manager):
-        # Your implementation here
+        """No need to sync clients, as they have different models in vertical FL"""
         return None
 
     def num_fit_clients(self, num_available_clients: int) -> tuple[int, int]:
@@ -89,6 +89,8 @@ class SotaStrategy(Strategy):
             return None, {}
 
         self.net.train()
+
+        # Load the embeddings from the results
         personal_embedding = None
         clinical_embedding = None
         for _, fitres in results:
@@ -102,6 +104,7 @@ class SotaStrategy(Strategy):
                 clinical_embedding = pickle.loads(clinical_embedding_bytes)
                 clinical_embedding = clinical_embedding.clone().detach().requires_grad_(True)
 
+        # Finish the forward pass and calculate the loss
         prediction = self.net(personal_embedding, clinical_embedding)
         targets = self.all_batches[self.curr_batch][1]
         loss = self.criterion(prediction, targets)
@@ -109,7 +112,7 @@ class SotaStrategy(Strategy):
         self.combined_optimizer.step()
         self.combined_optimizer.zero_grad()
 
-        # Step 5: Get gradients for embeddings
+        # Get gradients for embeddings
         self.personal_gradients = personal_embedding.grad.numpy()
         self.clinical_gradients = clinical_embedding.grad.numpy()
         metrics = {}
@@ -121,7 +124,7 @@ class SotaStrategy(Strategy):
 
     def configure_evaluate(self, server_round, parameters, client_manager):
         """Configure the next round of evaluation."""
-        # Parameters and config
+        # Parameters and config, no config needed as we evaluate the whole dataset
         config = {}
         evaluate_ins = EvaluateIns(parameters, config)
 
@@ -137,6 +140,7 @@ class SotaStrategy(Strategy):
             print(f"Failures: {failures}")
             return None, {}
 
+        # collect embeddings from results
         personal_embedding = None
         clinical_embedding = None
         for _, evalres in results:
@@ -145,9 +149,11 @@ class SotaStrategy(Strategy):
             elif evalres.metrics["type"] == NetworkType.CLINICAL.value:
                 clinical_embedding = evalres.metrics["embedding"]
 
+        # Deserialize the embeddings
         clinical_embedding = pickle.loads(clinical_embedding)
         personal_embedding = pickle.loads(personal_embedding)
 
+        # Perform the forward pass and calculate the loss
         self.net.eval()
         prediction = self.net(personal_embedding, clinical_embedding)
         targets = self.test_dataset.tensors[1]
@@ -156,6 +162,7 @@ class SotaStrategy(Strategy):
         return loss.item(), {"loss": loss.item()}
 
     def evaluate(self, server_round, parameters):
+        # We don't evaluate on the server as we rely on embeddings from the clients
         pass
 
 
