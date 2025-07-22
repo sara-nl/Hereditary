@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clef-vertical-messaging-api"
+version = "1.0.0"
+description = ""
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.19.0",
+    "flwr-datasets[vision]>=0.5.0",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "scikit-learn",
+    "pandas",
+    "numpy",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "douwe"
+
+[tool.flwr.app.components]
+serverapp = "clef_vertical_messaging_api.server_app:app"
+clientapp = "clef_vertical_messaging_api.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 200
+fraction-fit = 0.5
+local-epochs = 1
+learning-rate = 0.001
+batch-size = 128
+embedding-size = 16
+dropout-rate = 0.2
+personal-hidden-sizes = "32"
+clinical-hidden-sizes = "32"
+combined-hidden-sizes = "16,8"
+required-nodes = 2
+node-timeout = 60.0
+training-timeout = 30.0
+num-epochs = 5
+
+[tool.flwr.federations]
+default = "local-simulation"
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 2
