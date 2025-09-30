@@ -3,17 +3,16 @@
 import time
 
 import torch
-from dpexample.task import make_net, get_weights, load_data, set_weights, test, train
-
 from flwr.client import ClientApp, NumPyClient
-from flwr.common import Context
 from flwr.client.mod import fixedclipping_mod
+from flwr.common import Context
+
+from dpexample.task import get_weights, load_data, make_net, set_weights, test, train
+
 
 # Define Flower Client
 class FlowerClient(NumPyClient):
-    def __init__(
-        self, trainloader, valloader, local_epochs, learning_rate, partition_id: int
-    ):
+    def __init__(self, trainloader, valloader, local_epochs, learning_rate, partition_id: int):
         self.net = make_net()
         self.trainloader = trainloader
         self.valloader = valloader
@@ -35,7 +34,7 @@ class FlowerClient(NumPyClient):
             self.trainloader,
             self.valloader,
             self.local_epochs,
-            lr,  
+            lr,
             self.device,
             data_percentage=data_percentage,
         )
@@ -52,7 +51,11 @@ class FlowerClient(NumPyClient):
         loss, accuracy = test(self.net, self.valloader, self.device)
         print("eval acc: ", accuracy)
         # Include loss and partition id in eval metrics
-        return loss, len(self.valloader.dataset), {"accuracy": accuracy, "loss": loss, "partition_id": self.partition_id}
+        return (
+            loss,
+            len(self.valloader.dataset),
+            {"accuracy": accuracy, "loss": loss, "partition_id": self.partition_id},
+        )
 
 
 def client_fn(context: Context):
@@ -63,16 +66,12 @@ def client_fn(context: Context):
 
     # Read run_config to fetch hyperparameters relevant to this run
     batch_size = context.run_config["batch-size"]
-    trainloader, valloader = load_data(
-        partition_id, num_partitions, batch_size
-    )
+    trainloader, valloader = load_data(partition_id, num_partitions, batch_size)
     local_epochs = context.run_config["local-epochs"]
     lr = context.run_config["learning-rate"]
 
     # Return Client instance
-    return FlowerClient(
-        trainloader, valloader, local_epochs, lr, partition_id
-    ).to_client()
+    return FlowerClient(trainloader, valloader, local_epochs, lr, partition_id).to_client()
 
 
 # Flower ClientApp

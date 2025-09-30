@@ -8,12 +8,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import models
-from torchvision import datasets
+import torchvision.transforms as transforms
 from flwr_datasets import FederatedDataset
 from flwr_datasets.partitioner import IidPartitioner
 from torch.utils.data import DataLoader, Subset
-import torchvision.transforms as transforms
+from torchvision import datasets, models
 
 
 def get_resnet18(num_classes=10):
@@ -55,11 +54,12 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int, is_demo: 
 
     seed = 42
     pytorch_transforms = transforms.Compose(
-        [transforms.ToTensor(), 
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)), 
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(10),
-        transforms.RandomCrop(32, padding=4)
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(10),
+            transforms.RandomCrop(32, padding=4),
         ]
     )
 
@@ -87,9 +87,7 @@ def load_cifar10_test(batch_size: int, data_dir: str = "data") -> DataLoader:
     present under `data_dir` (no download performed).
     """
     pytorch_transforms = transforms.Compose(
-        [transforms.ToTensor(), 
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-        ]
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
     )
     testset = datasets.CIFAR10(
         root=data_dir,
@@ -109,7 +107,7 @@ def train(net, trainloader, valloader, epochs, learning_rate, device, data_perce
         net.parameters(),
         lr=learning_rate,
         momentum=0.9,
-        weight_decay=1e-4  # Add weight decay for better regularization
+        weight_decay=1e-4,  # Add weight decay for better regularization
     )
     net.train()
     for _ in range(epochs):

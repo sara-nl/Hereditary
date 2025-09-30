@@ -37,7 +37,7 @@ max-weight = 9000
 # Parameters for the Differential Privacy protocol
 noise-multiplier = 0.00000001
 clipping-norm = 1000.0
-num-partitions = 10
+num-partitions = 5
 
 # TensorBoard configuration
 tensorboard-run-name = "dp_10clients_local_sim"
@@ -46,11 +46,11 @@ tensorboard-run-name = "dp_10clients_local_sim"
 default = "local-simulation"
 
 [tool.flwr.federations.local-superlink]
-options.num-supernodes = 10
+options.num-supernodes = 5
 address="127.0.0.1:9093"
 insecure=true
 
 [tool.flwr.federations.local-simulation]
-options.num-supernodes = 10
+options.num-supernodes = 5
 options.backend.client-resources.num-cpus = 1
 options.backend.client-resources.num-gpus = 0

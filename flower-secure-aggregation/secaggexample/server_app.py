@@ -1,27 +1,20 @@
 """secaggexample: A Flower with SecAgg+ app."""
 
+import math
+from datetime import datetime
 from logging import DEBUG
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
-from secaggexample.task import (
-    get_weights,
-    make_net,
-    set_weights,
-    test,
-    load_cifar10_test,
-)
-from secaggexample.workflow_with_log import SecAggPlusWorkflowWithLogs
-
+import torch
 from flwr.common import Context, Metrics, ndarrays_to_parameters
 from flwr.common.logger import update_console_handler
 from flwr.server import Grid, LegacyContext, ServerApp, ServerConfig
 from flwr.server.strategy import FedAvg
 from flwr.server.workflow import DefaultWorkflow, SecAggPlusWorkflow
-import torch
-import math
 from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
-from typing import Optional
+
+from secaggexample.task import get_weights, load_cifar10_test, make_net, set_weights, test
+from secaggexample.workflow_with_log import SecAggPlusWorkflowWithLogs
 
 # Global TensorBoard writer
 TB_WRITER: Optional[SummaryWriter] = None
@@ -29,21 +22,21 @@ TB_WRITER: Optional[SummaryWriter] = None
 
 def on_fit_config(server_round: int, config: dict):
     """Return training configuration dict for each round with cosine annealing learning rate.
-    
+
     The learning rate follows a cosine annealing schedule from the initial learning rate
     (from config) down to 1% of the initial learning rate over the course of training.
     """
     # Get initial learning rate from run_config, default to 0.01 if not found
     initial_lr = float(config.get("learning-rate", 0.01))
     max_rounds = int(config.get("num-server-rounds", 10))
-    
+
     # Calculate current progress through training (0.0 to 1.0)
     progress = min(server_round / max_rounds, 1.0)
-    
+
     # Cosine annealing schedule
     # eta_min = 1% of initial learning rate
     eta_min = initial_lr * 0.01
-    
+
     # Cosine annealing formula
     lr = eta_min + 0.5 * (initial_lr - eta_min) * (1 + math.cos(math.pi * progress))
 
@@ -59,6 +52,7 @@ def on_fit_config(server_round: int, config: dict):
     if TB_WRITER is not None:
         TB_WRITER.add_scalar("server/lr", lr, server_round)
     return {"learning_rate": lr, "data_percentage": data_percentage, "server_round": server_round}
+
 
 # Define metric aggregation function
 def weighted_average(eval_type, metrics: List[Tuple[int, Metrics]]) -> Metrics:
@@ -89,6 +83,7 @@ def weighted_average(eval_type, metrics: List[Tuple[int, Metrics]]) -> Metrics:
 
     print(f"{eval_type} weighted client acc: ", w_acc)
     return {"accuracy": w_acc}
+
 
 # Server-side evaluation will be defined inside main() to capture testloader
 # Flower ServerApp
