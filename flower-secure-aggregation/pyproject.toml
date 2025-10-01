@@ -51,6 +51,6 @@ address="127.0.0.1:9093"
 insecure=true
 
 [tool.flwr.federations.local-simulation]
-options.num-supernodes = 10
+options.num-supernodes = 5
 options.backend.client-resources.num-cpus = 1
 options.backend.client-resources.num-gpus = 0.1

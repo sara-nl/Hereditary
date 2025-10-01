@@ -9,8 +9,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from flwr_datasets import FederatedDataset
-from flwr_datasets.partitioner import IidPartitioner
 from torch.utils.data import DataLoader, Subset
 from torchvision import datasets, models
 
@@ -40,7 +38,7 @@ def set_weights(net, parameters):
     net.load_state_dict(state_dict, strict=True)
 
 
-def load_data(partition_id: int, num_partitions: int, batch_size: int, is_demo: bool):
+def load_data(partition_id: int, num_partitions: int, batch_size: int):
     """Load partitioned CIFAR-10 data using torchvision with a fixed seed.
 
     Clients use the FULL local partition for training. For metrics, we report
@@ -48,9 +46,6 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int, is_demo: 
     validation. Partitioning is deterministic across runs given the fixed seed.
     """
     print("partition_id: ", partition_id)
-    if is_demo:
-        trainloader = Mock(dataset=[0])
-        return trainloader, trainloader
 
     seed = 42
     pytorch_transforms = transforms.Compose(
