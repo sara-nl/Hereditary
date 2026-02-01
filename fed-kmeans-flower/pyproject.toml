@@ -1,0 +1,102 @@
+# =====================================================================
+# For a full TOML configuration guide, check the Flower docs:
+# https://flower.ai/docs/framework/how-to-configure-pyproject-toml.html
+# =====================================================================
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fed-kmeans-flower"
+version = "1.0.0"
+description = "Federated K-means clustering using Flower messaging API"
+license = "Apache-2.0"
+authors = [
+    {name = "d0uwe"},
+]
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Distributed Computing",
+]
+keywords = ["federated learning", "k-means", "clustering"]
+
+# Dependencies for your Flower App
+dependencies = [
+    "flwr[simulation]>=1.23.0",
+    "scikit-learn>=1.0.0,<2.0.0",
+    "scipy>=1.7.0,<2.0.0",  
+    "pydantic>=2.0.0,<3.0.0",  
+    "umap-learn>=0.5.11",
+    "pandas==2.3.3",
+    "matplotlib==3.10.8",
+    "psutil==7.2.1"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+viz = [
+    "matplotlib>=3.5.0",
+    "opencv-python>=4.13.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "d0uwe"
+
+# Point to your ServerApp and ClientApp objects
+[tool.flwr.app.components]
+serverapp = "fed_kmeans_flower.server_app:app"
+clientapp = "fed_kmeans_flower.client_app:app"
+
+# Custom config values accessible via `context.run_config`
+[tool.flwr.app.config]
+k-global = 5
+max-iterations = 50
+privacy-threshold = 2
+convergence-tolerance = 0.01
+local-kmeans-iterations = 1
+weighted-aggregation = true
+required-clients = 3
+client-timeout = 30.0
+recovery-timeout = 30.0
+recovery-retry-delay = 5.0
+evaluation-frequency = 1
+data-source = "test_data" # "ALS" or "test_data"
+log-dir = "./logs"  # Directory for experiment logs and means tracking
+
+# Default federation to use when running the app
+[tool.flwr.federations]
+default = "local-simulation"
+
+# Local simulation federation with 3 virtual SuperNodes
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 3
+
+# Local superlink federation
+[tool.flwr.federations.local-superlink]
+options.num-supernodes = 3
+address="127.0.0.1:9093"
+insecure=true
+
+# Surf superlink federation
+[tool.flwr.federations.surf-superlink]
+options.num-supernodes = 3
+address="[IP_ADDRESS]:9093"
+insecure=true
