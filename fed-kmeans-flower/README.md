@@ -32,9 +32,10 @@ If you are running the superlink on a remote server, ensure that ports 9091, 909
 flower-superlink --insecure
 
 # Start the clients
-flower-supernode --insecure --clientappio-api-address 127.0.0.1:9095 --node-config "num-partitions=3 partition-id=0"
-flower-supernode --insecure --clientappio-api-address 127.0.0.1:9096 --node-config "num-partitions=3 partition-id=1"
-flower-supernode --insecure --clientappio-api-address 127.0.0.1:9097 --node-config "num-partitions=3 partition-id=2"
+flower-supernode --insecure --superlink SUPERLINK_IP:9092 --clientappio-api-address 0.0.0.0:9094 --node-config "num-partitions=3 partition-id=0"
+flower-supernode --insecure --superlink SUPERLINK_IP:9092 --clientappio-api-address 0.0.0.0:9095 --node-config "num-partitions=3 partition-id=1"
+flower-supernode --insecure --superlink SUPERLINK_IP:9092 --clientappio-api-address 0.0.0.0:9096 --node-config "num-partitions=3 partition-id=2"
+
 ```
 
 The partitions are mapped as follows: {0: "T", 1: "L", 2: "U"}
