@@ -1,4 +1,4 @@
-# Messaing API example 
+# Messaging API example 
 
 This is a simple example of how to use the Flower Messaging API to implement a federated learning /analytics application.
 
