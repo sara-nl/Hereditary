@@ -18,11 +18,10 @@ This project demonstrates how to run a [Flower](https://flower.ai/) federated le
 - **`project.yml`**: Auto-generated from `build_distribution.sh`. The NVFlare network topology (server, client sites, admin).
 - **`docker-compose.yml`**: Auto-generated from `build_distribution.sh`. Configures the multi-container Docker environment.
 - **`build_distribution.sh`**: The single master script that does everything: generates `project.yml`, provisions cryptographic certificates, builds the Flower job, generates `docker-compose.yml`, and packages everything into `dist/` for deployment.
-- **`run_local_docker.sh`**: End-to-end automation — calls `build_distribution.sh` and then launches Docker Compose and submits the job.
-- **`run_local.sh`**: A quick way to test using the NVFlare Simulator (no Docker needed).
 - **`Dockerfile.nvflare`**: The Docker runtime image used by all server and client containers.
+- **`custom4client/`**: Custom security handler components injected into the client and server workspaces during provisioning.
 - **`pyproject.toml`**: Defines dependencies and Flower app configurations for the `cifar10_flower` job.
-
+- **`uv.lock`**: Dependency lockfile managed by `uv`.
 
 ## Workshop participant
 
@@ -52,33 +51,17 @@ Build and run the NVFlare Docker container directly:
    ./startup/sub_start.sh
    ```
 
-## How to Run
+## How to Build and Run
 
-You have two primary ways to run this federated learning job:
-
-### 1. Local Simulation (Quick Test)
-
-The NVFlare Simulator runs the entire federated network locally for quick testing and debugging without the overhead of containers.
+To prepare your network configuration, cryptographic certificates, Flower job package, and Docker configuration, run the distribution builder script:
 
 ```bash
-./run_local.sh
+./build_distribution.sh
 ```
 
-This script will:
-1. Export the Flower application as an NVFlare job.
-2. Run the `nvflare simulator` to execute the job using 3 clients.
-
-### 2. Distributed Docker Run (Production-like)
-
-This mode spins up separate Docker containers for the server and each site, simulating a true distributed network. A single script does everything: it stops any old containers, generates the network config, provisions certificates, builds the job, generates `docker-compose.yml`, and submits the job:
-
+You can also customise the run directly with flags:
 ```bash
-./run_local_docker.sh
-```
-
-You can also customise the run directly:
-```bash
-./run_local_docker.sh --server server1 --sites hospital-a hospital-b hospital-c
+./build_distribution.sh --server server1 --sites hospital-a hospital-b hospital-c
 ```
 
 This script performs the following steps automatically:
@@ -86,9 +69,7 @@ This script performs the following steps automatically:
 2. **Provisions certificates** — generates unique cryptographic startup kits for each participant.
 3. **Builds the Flower NVFlare job** package.
 4. **Generates `docker-compose.yml`** dynamically to match the server and site names.
-5. **Starts Docker Compose** — builds images and starts all containers.
-6. **Submits the job** via the NVFlare admin CLI.
-7. **Tails logs** so you can watch training progress live.
+5. **Packages everything** into the `dist/` directory for deployment.
 
 ---
 
@@ -179,12 +160,12 @@ On the first run, NVFlare generates folders alongside `startup/`:
 
 ---
 
-> **Note:** The `docker-compose.yml` is automatically overwritten each time you run `build_distribution.sh` and is only used for the local Docker simulation (`run_local_docker.sh`). It is not needed for real deployments.
+> **Note:** The `docker-compose.yml` is automatically overwritten each time you run `build_distribution.sh` and is only used for the local Docker simulation. It is not needed for real deployments.
 
 ## Troubleshooting
 
 - **Clients cannot connect to server (`Cannot connect to host server1:8002`):**
-  This happens when you change site names or the server name between runs. The old server container stays alive on the old Docker network while new client containers land on a new network, so Docker DNS can't route between them. **Fix:** `run_local_docker.sh` automatically runs `docker compose down` before every run to tear down stale containers and networks. If you still see this after a manual `docker compose up`, run `docker compose down && docker network prune -f` first.
+  This happens when you change site names or the server name between runs. The old server container stays alive on the old Docker network while new client containers land on a new network, so Docker DNS can't route between them. **Fix:** Always ensure you run `docker compose down` before running `build_distribution.sh` to tear down stale containers and networks. If you still see this after a manual `docker compose up`, run `docker compose down && docker network prune -f` first.
 
 - **Out Of Memory (OOMKilled) during Local Docker Run:**
   If the training job crashes with `exit code 1` and aborts on the clients, your Docker daemon likely ran out of memory. 4 PyTorch instances (1 server + 3 clients) loading CIFAR-10 concurrently require significant RAM.

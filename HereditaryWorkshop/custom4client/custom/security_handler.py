@@ -152,6 +152,16 @@ class CustomSecurityHandler(FLComponent):
             
         if not job_id:
             job_id = fl_ctx.get_prop("__run_num__")
+            
+        if not job_id:
+            job_meta = fl_ctx.get_prop("__job_meta__")
+            if job_meta and isinstance(job_meta, dict):
+                job_id = job_meta.get("job_id", "")
+                
+        if not job_id:
+            event_data = fl_ctx.get_prop("__event_data__")
+            if event_data and hasattr(event_data, "get"):
+                job_id = event_data.get("job_id", "")
 
         # Retrieve the app root from the context
         app_root: str | None = fl_ctx.get_prop(FLContextKey.APP_ROOT)
@@ -161,6 +171,9 @@ class CustomSecurityHandler(FLComponent):
                 # Use INFO level so we can actually see this in the logs!
                 keys = fl_ctx.get_prop_keys()
                 self.logger.info("CustomSecurityHandler: Could not find job_id. Available keys: %s", keys)
+                self.logger.info("CustomSecurityHandler: __job_meta__: %s", fl_ctx.get_prop("__job_meta__"))
+                self.logger.info("CustomSecurityHandler: __run_num__: %s", fl_ctx.get_prop("__run_num__"))
+                self.logger.info("CustomSecurityHandler: __event_data__: %s", fl_ctx.get_prop("__event_data__"))
             except Exception:
                 self.logger.info("CustomSecurityHandler: Could not find job_id and failed to list keys.")
 
@@ -178,7 +191,7 @@ class CustomSecurityHandler(FLComponent):
                 "CustomSecurityHandler [%s]: Could not determine valid app_root (job_id=%s); skipping code scan.",
                 phase, job_id
             )
-            self._set_authorized(fl_ctx, reason="app_root not found")
+            self._set_denied(fl_ctx, reason="app_root not found - security check failed")
             return
 
         self.logger.info(

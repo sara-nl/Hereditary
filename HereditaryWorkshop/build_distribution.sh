@@ -106,8 +106,8 @@ rm -rf "${PROVISION_W}/${PROJECT_NAME}"
 
 uv run nvflare provision -w "${PROVISION_W}" -p "${OUTPUT_YML}"
 
-echo "Injecting custom security components into node workspaces..."
-for node_name in "${SERVER_IP}" "${SITES[@]}"; do
+echo "Injecting custom security components into client workspaces..."
+for node_name in "${SITES[@]}"; do
     mkdir -p "${PROD_00}/${node_name}/local"
     cp -r "${ROOT}/custom4client/"* "${PROD_00}/${node_name}/local/"
 done
@@ -192,7 +192,9 @@ for node in "${PROD_00}"/*; do
 done
 
 cp "${ROOT}/Dockerfile.nvflare" "${DIST_DIR}/"
+cp "${ROOT}/pyproject.toml" "${DIST_DIR}/"
 cp "${ROOT}/uv.lock" "${DIST_DIR}/"
+
 
 echo ""
 echo "Done! All distribution files are in the 'dist' folder:"
