@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "federated-cifar10"
+version = "0.1.1"
+description = "Federated CIFAR-10 training across supercomputers using Flower + sbatch"
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]==1.29.0",
+    "torch==2.8.0",
+    "safetensors>=0.4.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "d0uwe"
+
+[tool.flwr.app.components]
+serverapp = "multi_node_cifar10.server_app:app"
+clientapp = "multi_node_cifar10.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 3
+fraction-evaluate = 0.0
+learning-rate = 0.001
+initial-checkpoint = ""
+output-checkpoint = "final_global_model.pt"
+
+# --- Training config ---
+epochs = 3
+lr = 0.001
+batch-size = 128
+max-batches-per-epoch = 32
+save-freq = 5
+experiment-name = "fl_cifar10_training"
+dummy-run = false
+
+
+#######################################################################
+# CONFIGURATION MIGRATION NOTICE:
+#
+# What was previously called "federation config" for SuperLink
+# connections in pyproject.toml has been renamed and moved.
+#
+# These settings are now **SuperLink connection configuration**
+# and are defined in the Flower configuration file.
+#
+# The entries below are commented out intentionally and are kept
+# only as a migration reference.
+#
+# Docs: https://flower.ai/docs/framework/ref-flower-configuration.html
+#######################################################################
+
+# [tool.flwr.federations]
+# default = "local-simulation"
+
+# [tool.flwr.federations.local-superlink]
+# options.num-supernodes = 2
+# address = "tcn267:9093"
+# insecure = true
+
+# [tool.flwr.federations.local-simulation]
+# options.num-supernodes = 2
+

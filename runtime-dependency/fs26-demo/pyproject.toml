@@ -1,0 +1,36 @@
+# =====================================================================
+# For a full TOML configuration guide, check the Flower docs:
+# https://flower.ai/docs/framework/how-to-configure-pyproject-toml.html
+# =====================================================================
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fs26-demo"
+version = "1.1.1"
+description = "A simple app for Flower AI Summit 2026"
+license = {file = "LICENSE"}
+# Dependencies for your Flower App
+dependencies = [
+    "nvflare==2.8.0rc2",
+    "flwr[simulation]>=1.29.0",
+    "xgboost==3.2.0"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "javier"
+
+# Point to your ServerApp and ClientApp objects
+# Format: "<module>:<object>"
+fab-format-version = 1
+flwr-version-target = "1.29.0"
+
+[tool.flwr.app.components]
+serverapp = "demo.server_app:app"
+clientapp = "demo.client_app:app"
+

@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+.vscode/
+
+# Build & Orchestration
+staging/
+nvflare_workspace/
+dist/
+
+# Data & Logs
+data/
+*.log
+MY_LOG.TXT
+
+# Auto-generated configs
+docker-compose.yml
+project.yml

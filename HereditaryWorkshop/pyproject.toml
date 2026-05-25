@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Tested with:
+#   flwr==1.25.0
+#   nvflare==2.7.2
+#   torch==2.11.0
+#   torchvision==0.26.0
+#   tensorboard==2.20.0
+
+[project]
+name = "flwr-pt-tb"
+version = "1.0.0"
+description = ""
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    # NVFlare 2.7.x still uses `flwr --federation-config address=...`; Flower expects `address`
+    # in `[tool.flwr.federations.<name>]` so CLI overrides merge (see `nvflare-link` below).
+    # Use 1.25.x: validated with NVFlare simulator; 1.26+ Flower CLI migration can break `flwr ls`/`stop` in this flow.
+    "flwr[simulation]>=1.24,<1.26",
+    "nvflare~=2.7.0",
+    "torch",
+    "torchvision",
+    "tensorboard",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "nvidia"
+
+[tool.flwr.app.components]
+serverapp = "flwr_pt_tb.server:app"
+clientapp = "flwr_pt_tb.client:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 3
+learning-rate = 0.001
+momentum = 0.9
+
+[tool.flwr.federations]
+default = "nvflare-link"
+
+# NVFlare passes `--federation-config 'address="...\"'`; keep a federation entry
+# so Flower can merge the runtime address (see flwr/cli/config_utils.py).
+[tool.flwr.federations.nvflare-link]
+insecure = true
+# Placeholder; NVFlare merges the real Control API / Exec API address via `--federation-config`.
+address = "127.0.0.1:1"
+

@@ -1,0 +1,257 @@
+=== FSDP CIFAR-10 Training on H100 ===
+SLURM_JOB_NODELIST: gcn147
+SLURM_PROCID: 0
+Master node: gcn147:29500
+Nodes: 1, Rank: 0, Procs/node: 1
+Hostname: gcn147.local.snellius.surf.nl
+World size: 1
+Device: cuda (backend: nccl)
+Batch size (per rank): 128
+Effective batch size: 128
+Epochs: 3, LR: 0.001
+Max batches/epoch: 32
+Output dir: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/round_1/client_0
+/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/fsdp/fully_sharded_data_parallel.py:478: UserWarning: FSDP is switching to use `NO_SHARD` instead of ShardingStrategy.FULL_SHARD since the world size is 1.
+  _init_core_state(
+/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/fsdp/_init_utils.py:571: UserWarning: FSDP got the argument `device_id` cuda on rank 0, which does not have an explicit index. FSDP will use the current device 0. If this is incorrect, please explicitly call `torch.cuda.set_device()` before FSDP initialization or pass in the explicit device index as the `device_id` argument.
+  device_from_device_id = _get_device_from_device_id(
+/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torchvision/datasets/cifar.py:83: VisibleDeprecationWarning: dtype(): align should be passed as Python or NumPy boolean but got `align=0`. Did you mean to pass a tuple to create a subarray type? (Deprecated NumPy 2.4)
+  entry = pickle.load(f, encoding="latin1")
+/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py:124: UserWarning: When using ``NO_SHARD`` for ``ShardingStrategy``, full_state_dict willbe returned.
+  return func(*args, **kwargs)
+[Rank 0] Loaded model weights from /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/round_1/client_0/global_weights.pt
+Epoch 1/3
+gcn147:157676:157726 [0] NCCL INFO ENV/Plugin: Could not find: libnccl-env.so
+gcn147:157676:157726 [0] NCCL INFO Stack size limit (unlimited) is unsafe; will use 8192KB for newly launched threads
+gcn147:157676:157726 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eno
+gcn147:157676:157726 [0] NCCL INFO Bootstrap: Using eno2np0:172.18.62.147<0>
+gcn147:157676:157726 [0] NCCL INFO cudaDriverVersion 13020
+gcn147:157676:157726 [0] NCCL INFO NCCL version 2.28.9+cuda13.0
+gcn147:157676:157726 [0] NCCL INFO Comm config Blocking set to 1
+gcn147:157676:157726 [0] NCCL INFO NET/Plugin: Could not find: libnccl-net.so
+gcn147:157676:157726 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eno
+gcn147:157676:157726 [0] NCCL INFO NET/IB : Using [0]mlx5_0:1/RoCE [1]mlx5_2:1/IB [2]mlx5_3:1/IB [3]mlx5_4:1/IB [4]mlx5_5:1/IB [RO]; OOB eno2np0:172.18.62.147<0>
+gcn147:157676:157726 [0] NCCL INFO Initialized NET plugin IB
+gcn147:157676:157726 [0] NCCL INFO Assigned NET plugin IB to comm
+gcn147:157676:157726 [0] NCCL INFO Assigned GIN plugin GIN_IB_GDAKI to comm
+gcn147:157676:157726 [0] NCCL INFO Using network IB
+gcn147:157676:157726 [0] NCCL INFO ncclCommInitRankConfig comm 0x153813e21470 rank 0 nranks 1 cudaDev 0 nvmlDev 0 busId c6000 commId 0x864537f2e570303f - Init START
+gcn147:157676:157726 [0] NCCL INFO RAS client listening socket at ::1<28028>
+gcn147:157676:157726 [0] NCCL INFO Bootstrap timings total 0.000779 (create 0.000054, send 0.000197, recv 0.000126, ring 0.000001, delay 0.000002)
+gcn147:157676:157726 [0] NCCL INFO ncclTopoGetCpuAffinity: Affinity for GPU 0 is 32-63. (GPU affinity = 32-63 ; CPU affinity = 32-63).
+gcn147:157676:157726 [0] NCCL INFO comm 0x153813e21470 rank 0 nRanks 1 nNodes 1 localRanks 1 localRank 0 MNNVL 0
+gcn147:157676:157726 [0] NCCL INFO Channel 00/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 01/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 02/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 03/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 04/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 05/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 06/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 07/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 08/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 09/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 10/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 11/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 12/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 13/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 14/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 15/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 16/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 17/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 18/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 19/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 20/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 21/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 22/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 23/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 24/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 25/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 26/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 27/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 28/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 29/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 30/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 31/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 32/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 33/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 34/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 35/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 36/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 37/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 38/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 39/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 40/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 41/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 42/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 43/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 44/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 45/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 46/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 47/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 48/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 49/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 50/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 51/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 52/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 53/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 54/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 55/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 56/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 57/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 58/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 59/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 60/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 61/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 62/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Channel 63/64 : 0
+gcn147:157676:157726 [0] NCCL INFO Trees [0] -1/-1/-1->0->-1 [1] -1/-1/-1->0->-1 [2] -1/-1/-1->0->-1 [3] -1/-1/-1->0->-1 [4] -1/-1/-1->0->-1 [5] -1/-1/-1->0->-1 [6] -1/-1/-1->0->-1 [7] -1/-1/-1->0->-1 [8] -1/-1/-1->0->-1 [9] -1/-1/-1->0->-1 [10] -1/-1/-1->0->-1 [11] -1/-1/-1->0->-1 [12] -1/-1/-1->0->-1 [13] -1/-1/-1->0->-1 [14] -1/-1/-1->0->-1 [15] -1/-1/-1->0->-1 [16] -1/-1/-1->0->-1 [17] -1/-1/-1->0->-1 [18] -1/-1/-1->0->-1 [19] -1/-1/-1->0->-1 [20] -1/-1/-1->0->-1 [21] -1/-1/-1->0->-1 [22] -1/-1/-1->0->-1 [23] -1/-1/-1->0->-1 [24] -1/-1/-1->0->-1 [25] -1/-1/-1->0->-1 [26] -1/-1/-1->0->-1 [27] -1/-1/-1->0->-1 [28] -1/-1/-1->0->-1 [29] -1/-1/-1->0->-1 [30] -1/-1/-1->0->-1 [31] -1/-1/-1->0->-1 [32] -1/-1/-1->0->-1 [33] -1/-1/-1->0->-1 [34] -1/-1/-1->0->-1 [35] -1/-1/-1->0->-1 [36] -1/-1/-1->0->-1 [37] -1/-1/-1->0->-1 [38] -1/-1/-1->0->-1 [39] -1/-1/-1->0->-1 [40] -1/-1/-1->0->-1 [41] -1/-1/-1->0->-1 [42] -1/-1/-1->0->-1 [43] -1/-1/-1->0->-1 [44] -1/-1/-1->0->-1 [45] -1/-1/-1->0->-1 [46] -1/-1/-1->0->-1 [47] 
+gcn147:157676:157726 [0] NCCL INFO P2P Chunksize set to 524288
+gcn147:157676:157726 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so
+gcn147:157676:157726 [0] NCCL INFO Check P2P Type isAllDirectP2p 1 directMode 0 isAllCudaP2p 1
+gcn147:157676:157741 [0] NCCL INFO [Proxy Service] Device 0 CPU core 34
+gcn147:157676:157742 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 57
+gcn147:157676:157726 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so
+gcn147:157676:157726 [0] NCCL INFO 64 coll channels, 64 collnet channels, 0 nvls channels, 64 p2p channels, 64 p2p channels per peer
+gcn147:157676:157726 [0] NCCL INFO CC Off, workFifoBytes 1048576
+gcn147:157676:157726 [0] NCCL INFO ncclCommInitRankConfig comm 0x153813e21470 rank 0 nranks 1 cudaDev 0 nvmlDev 0 busId c6000 commId 0x864537f2e570303f - Init COMPLETE
+gcn147:157676:157726 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 0 nranks 1 total 0.35 (kernels 0.24, alloc 0.05, bootstrap 0.00, allgathers 0.01, topo 0.01, graphs 0.00, connections 0.04, rest 0.00)
+/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/autograd/graph.py:869: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /pytorch/torch/csrc/autograd/input_buffer.cpp:240.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+  Loss: 2.2449 | Acc@1: 15.38%
+  Test Loss: 2.2796 | Test Acc@1: 12.70%
+Epoch 2/3
+  Loss: 1.9844 | Acc@1: 26.61%
+  Test Loss: 1.9020 | Test Acc@1: 26.59%
+Epoch 3/3
+  Loss: 1.8236 | Acc@1: 31.84%
+  Test Loss: 1.7488 | Test Acc@1: 34.50%
+/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py:124: UserWarning: When using ``NO_SHARD`` for ``ShardingStrategy``, full_state_dict will be returned.
+  return func(*args, **kwargs)
+[Rank 0] Checkpoint saved to /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/round_1/client_0/checkpoint.pt
+Training complete.
+gcn147:157676:157676 [0] NCCL INFO comm 0x153813e21470 rank 0 nranks 1 cudaDev 0 busId c6000 - Destroy COMPLETE
+gcn147:157676:157676 [0] NCCL INFO ENV/Plugin: Closing env plugin ncclEnvDefault
+[W518 14:26:41.086509142 TCPStore.cpp:115] [c10d] recvVector failed on SocketImpl(fd=24, addr=[gcn147.local.snellius.surf.nl]:52668, remote=[gcn147.local.snellius.surf.nl]:29500): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x14564186f05d in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a9061d (0x14566001061d in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x6a92746 (0x145660012746 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::TCPStore::compareSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&) + 0x1ef (0x14566000d1ff in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #4: <unknown function> + 0xec315a (0x14566fad615a in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_python.so)
+frame #5: <unknown function> + 0x411060 (0x14566f024060 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_python.so)
+frame #6: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x18273ff]
+frame #7: _PyObject_MakeTpCall + 0xdc (0x185425c in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #8: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1af7733]
+frame #9: _PyEval_EvalFrameDefault + 0x54c8 (0x1817648 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #10: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1811841]
+frame #11: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x19854aa]
+frame #12: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x19853e4]
+frame #13: <unknown function> + 0x8a19a (0x14570882619a in /lib64/libc.so.6)
+frame #14: <unknown function> + 0x10f100 (0x1457088ab100 in /lib64/libc.so.6)
+
+W0518 14:26:41.675000 157651 torch/distributed/elastic/rendezvous/dynamic_rendezvous.py:1341] The node 'gcn147.local.snellius.surf.nl_157651_0' has failed to send a keep-alive heartbeat to the rendezvous '22849738' due to an error of type RendezvousConnectionError.
+[W518 14:26:41.108094750 TCPStore.cpp:106] [c10d] sendBytes failed on SocketImpl(fd=24, addr=[gcn147.local.snellius.surf.nl]:52668, remote=[gcn147.local.snellius.surf.nl]:29500): Broken pipe
+Exception raised from sendBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:653 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x14564186f05d in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a90931 (0x145660010931 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::compareSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&) + 0x1d8 (0x14566000d1e8 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0xec315a (0x14566fad615a in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_python.so)
+frame #4: <unknown function> + 0x411060 (0x14566f024060 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_python.so)
+frame #5: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x18273ff]
+frame #6: _PyObject_MakeTpCall + 0xdc (0x185425c in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #7: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1af7733]
+frame #8: _PyEval_EvalFrameDefault + 0x54c8 (0x1817648 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #9: _PyObject_Call_Prepend + 0xa0 (0x1890e20 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #10: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1890d5a]
+frame #11: _PyEval_EvalFrameDefault + 0x55af (0x181772f in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #12: PyEval_EvalCode + 0xde (0x1896d60 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #13: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x18b56c9]
+frame #14: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1a2cb45]
+frame #15: _PyRun_SimpleFileObject + 0x106 (0x1a2c906 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #16: _PyRun_AnyFileObject + 0x4a (0x1a2c68a in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #17: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1a2c610]
+frame #18: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1a2c51d]
+frame #19: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1ae2923]
+frame #20: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1987b58]
+frame #21: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x198796c]
+frame #22: <unknown function> + 0x295d0 (0x1457087c55d0 in /lib64/libc.so.6)
+frame #23: __libc_start_main + 0x80 (0x1457087c5680 in /lib64/libc.so.6)
+frame #24: _start + 0x29 (0x19a84a9 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+
+W0518 14:26:41.697000 157651 torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 157676 closing signal SIGTERM
+[W518 14:26:41.298040244 TCPStore.cpp:106] [c10d] sendBytes failed on SocketImpl(fd=24, addr=[gcn147.local.snellius.surf.nl]:52668, remote=[gcn147.local.snellius.surf.nl]:29500): Broken pipe
+Exception raised from sendBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:653 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x14564186f05d in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a90931 (0x145660010931 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::compareSet(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&, std::vector<unsigned char, std::allocator<unsigned char> > const&) + 0x1d8 (0x14566000d1e8 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0xec315a (0x14566fad615a in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_python.so)
+frame #4: <unknown function> + 0x411060 (0x14566f024060 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/lib/libtorch_python.so)
+frame #5: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x18273ff]
+frame #6: _PyObject_MakeTpCall + 0xdc (0x185425c in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #7: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1af7733]
+frame #8: _PyEval_EvalFrameDefault + 0x54c8 (0x1817648 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #9: _PyObject_Call_Prepend + 0xa0 (0x1890e20 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #10: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1890d5a]
+frame #11: _PyEval_EvalFrameDefault + 0x55af (0x181772f in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #12: PyEval_EvalCode + 0xde (0x1896d60 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #13: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x18b56c9]
+frame #14: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1a2cb45]
+frame #15: _PyRun_SimpleFileObject + 0x106 (0x1a2c906 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #16: _PyRun_AnyFileObject + 0x4a (0x1a2c68a in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+frame #17: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1a2c610]
+frame #18: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1a2c51d]
+frame #19: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1ae2923]
+frame #20: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x1987b58]
+frame #21: /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3() [0x198796c]
+frame #22: <unknown function> + 0x295d0 (0x1457087c55d0 in /lib64/libc.so.6)
+frame #23: __libc_start_main + 0x80 (0x1457087c5680 in /lib64/libc.so.6)
+frame #24: _start + 0x29 (0x19a84a9 in /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/python3)
+
+W0518 14:26:41.886000 157651 torch/distributed/elastic/rendezvous/dynamic_rendezvous.py:1293] The node 'gcn147.local.snellius.surf.nl_157651_0' has failed to shutdown the rendezvous '22849738' due to an error of type RendezvousConnectionError.
+Traceback (most recent call last):
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/rendezvous/c10d_rendezvous_backend.py", line 114, in _call_store
+    return getattr(self._store, store_op)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistNetworkError: Broken pipe
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/bin/torchrun", line 10, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/launcher/api.py", line 308, in launch_agent
+    result = agent.run()
+             ^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/metrics/api.py", line 134, in wrapper
+    result = f(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 731, in run
+    result = self._invoke_run(role)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/agent/server/api.py", line 944, in _invoke_run
+    num_nodes_waiting = rdzv_handler.num_nodes_waiting()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/rendezvous/dynamic_rendezvous.py", line 1264, in num_nodes_waiting
+    self._state_holder.sync()
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/rendezvous/dynamic_rendezvous.py", line 424, in sync
+    set_response = self._backend.set_state(state_bits, self._token)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/rendezvous/c10d_rendezvous_backend.py", line 97, in set_state
+    base64_state: bytes = self._call_store(
+                          ^^^^^^^^^^^^^^^^^
+  File "/gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/cifar10/.venv/lib/python3.12/site-packages/torch/distributed/elastic/rendezvous/c10d_rendezvous_backend.py", line 116, in _call_store
+    raise RendezvousConnectionError(
+torch.distributed.elastic.rendezvous.api.RendezvousConnectionError: The connection to the C10d store has failed. See inner exception for details.
+srun: error: gcn147: task 0: Exited with exit code 1
+srun: Terminating StepId=22849738.0

@@ -1,0 +1,28 @@
+{
+    "name": "fs26-demo-no-byoc",
+    "resource_spec": {},
+    "min_clients": 3,
+    "deploy_map": {
+        "app": [
+            "@ALL"
+        ]
+    },
+    "flower_predeployed": true,
+    "study": "default",
+    "submitter_name": "admin@nvidia.com",
+    "submitter_org": "nvidia",
+    "submitter_role": "project_admin",
+    "job_folder_name": "tmpxjxg1llf",
+    "job_id": "7d59ed3e-f9d5-4e84-b290-95a400a6be60",
+    "submit_time": 1779453192.738704,
+    "submit_time_iso": "2026-05-22T14:33:12.738704+02:00",
+    "start_time": "",
+    "duration": "N/A",
+    "data_storage_format": 2,
+    "status": "SUBMITTED",
+    "schedule_history": [
+        "2026-05-22 14:33:13: scheduled"
+    ],
+    "schedule_count": 1,
+    "last_schedule_time": 1779453193.086122
+}

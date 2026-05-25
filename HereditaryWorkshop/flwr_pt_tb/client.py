@@ -1,0 +1,264 @@
+# # Copyright (c) 2024, NVIDIA CORPORATION.  All rights reserved.
+# #
+# # Licensed under the Apache License, Version 2.0 (the "License");
+# # you may not use this file except in compliance with the License.
+# # You may obtain a copy of the License at
+# #
+# #     http://www.apache.org/licenses/LICENSE-2.0
+# #
+# # Unless required by applicable law or agreed to in writing, software
+# # distributed under the License is distributed on an "AS IS" BASIS,
+# # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# # See the License for the specific language governing permissions and
+# # limitations under the License.
+
+
+# import threading
+
+# from flwr.client import ClientApp, NumPyClient
+# from flwr.common import Context
+# from flwr.common.record import MetricRecord, RecordDict
+
+# from nvflare.client.tracking import SummaryWriter as NvFlareSummaryWriter
+
+# from .task import DEVICE, Net, get_weights, load_data, set_weights, test, train
+
+# # Module-level cache for model and data to avoid reloading every round.
+
+
+# class MetricsWriter:
+#     """Use NVFlare streaming when the Client API is available; otherwise fall back to local TensorBoard."""
+
+#     def __init__(self) -> None:
+#         self._nvflare: NvFlareSummaryWriter | None | bool = None
+#         self._tb = None
+
+#     def add_scalar(self, tag: str, scalar: float, global_step: int | None = None, **kwargs) -> None:
+#         if self._tb is not None:
+#             self._tb.add_scalar(tag, scalar, global_step)
+#             return
+#         if self._nvflare is False:
+#             from torch.utils.tensorboard import SummaryWriter
+
+#             self._tb = SummaryWriter()
+#             self._tb.add_scalar(tag, scalar, global_step)
+#             return
+#         if self._nvflare is None:
+#             try:
+#                 self._nvflare = NvFlareSummaryWriter()
+#             except RuntimeError:
+#                 self._nvflare = False
+#                 self.add_scalar(tag, scalar, global_step, **kwargs)
+#                 return
+#         try:
+#             assert isinstance(self._nvflare, NvFlareSummaryWriter)
+#             self._nvflare.add_scalar(tag, scalar, global_step, **kwargs)
+#         except RuntimeError:
+#             self._nvflare = False
+#             self.add_scalar(tag, scalar, global_step, **kwargs)
+# # Flower's supernode runs as a long-lived subprocess (not re-imported per round),
+# # so module-level state persists across FL rounds.
+# net = None
+# trainloader = None
+# testloader = None
+# _init_lock = threading.Lock()
+
+
+# def _ensure_data_loaded():
+#     """Load model and data once, reusing cached values on subsequent calls."""
+#     global net, trainloader, testloader
+#     with _init_lock:
+#         if net is None:
+#             net = Net().to(DEVICE)
+#         if trainloader is None or testloader is None:
+#             trainloader, testloader = load_data()
+
+
+# # Define FlowerClient and client_fn
+# class FlowerClient(NumPyClient):
+#     def __init__(self, context: Context, learning_rate: float, momentum: float):
+#         super().__init__()
+#         self.writer = MetricsWriter()
+#         self.flwr_context = context
+#         self.learning_rate = learning_rate
+#         self.momentum = momentum
+
+#         if "step" not in context.state.metric_records:
+#             self.set_step(0)
+
+#     def set_step(self, step: int):
+#         record = RecordDict()
+#         record["step"] = MetricRecord({"step": step})
+#         self.flwr_context.state = record
+
+#     def get_step(self):
+#         return int(self.flwr_context.state.metric_records["step"]["step"])
+
+#     def fit(self, parameters, config):
+#         step = self.get_step()
+#         set_weights(net, parameters)
+#         results = train(
+#             net,
+#             trainloader,
+#             testloader,
+#             epochs=1,
+#             device=DEVICE,
+#             learning_rate=self.learning_rate,
+#             momentum=self.momentum,
+#         )
+
+#         self.writer.add_scalar("train_loss", results["train_loss"], step)
+#         self.writer.add_scalar("train_accuracy", results["train_accuracy"], step)
+#         self.writer.add_scalar("val_loss", results["val_loss"], step)
+#         self.writer.add_scalar("val_accuracy", results["val_accuracy"], step)
+
+#         self.set_step(step + 1)
+
+#         return get_weights(net), len(trainloader.dataset), results
+
+#     def evaluate(self, parameters, config):
+#         set_weights(net, parameters)
+#         step = self.get_step()
+#         loss, accuracy = test(net, testloader)
+
+#         self.writer.add_scalar("test_loss", loss, step)
+#         self.writer.add_scalar("test_accuracy", accuracy, step)
+
+#         return loss, len(testloader.dataset), {"accuracy": accuracy}
+
+
+# def client_fn(context: Context):
+#     """Create and return an instance of Flower `Client`."""
+#     _ensure_data_loaded()
+#     learning_rate = context.run_config.get("learning-rate", 0.001)
+#     momentum = context.run_config.get("momentum", 0.9)
+#     return FlowerClient(context, learning_rate, momentum).to_client()
+
+
+# # Flower ClientApp
+# app = ClientApp(
+#     client_fn=client_fn,
+# )
+
+# Copyright (c) 2024, NVIDIA CORPORATION.  All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+import threading
+import time
+
+from flwr.client import ClientApp, NumPyClient
+from flwr.common import Context
+from flwr.common.record import MetricRecord, RecordDict
+
+from .task import DEVICE, Net, get_weights, load_data, set_weights, test, train
+
+# Module-level cache for model and data to avoid reloading every round.
+# import socket 
+
+class MetricsWriter:
+    """Log metrics to a simple human-readable text file instead of a binary document."""
+
+    def __init__(self, filename: str = "../metrics.txt") -> None:
+        self.filename = filename
+
+    def add_scalar(self, tag: str, scalar: float, global_step: int | None = None, **kwargs) -> None:
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        step_str = f" [step {global_step}]" if global_step is not None else ""
+        log_line = f"[{timestamp}]{step_str} {tag}: {scalar:.6f}\n"
+        with open(self.filename, "a") as f:
+            f.write(log_line)
+# Flower's supernode runs as a long-lived subprocess (not re-imported per round),
+# so module-level state persists across FL rounds.
+net = None
+trainloader = None
+testloader = None
+_init_lock = threading.Lock()
+
+
+def _ensure_data_loaded():
+    """Load model and data once, reusing cached values on subsequent calls."""
+    global net, trainloader, testloader
+    with _init_lock:
+        if net is None:
+            net = Net().to(DEVICE)
+        if trainloader is None or testloader is None:
+            trainloader, testloader = load_data()
+
+
+# Define FlowerClient and client_fn
+class FlowerClient(NumPyClient):
+    def __init__(self, context: Context, learning_rate: float, momentum: float):
+        super().__init__()
+        self.writer = MetricsWriter()
+        self.flwr_context = context
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+
+        if "step" not in context.state.metric_records:
+            self.set_step(0)
+
+    def set_step(self, step: int):
+        record = RecordDict()
+        record["step"] = MetricRecord({"step": step})
+        self.flwr_context.state = record
+
+    def get_step(self):
+        return int(self.flwr_context.state.metric_records["step"]["step"])
+
+    def fit(self, parameters, config):
+        step = self.get_step()
+        set_weights(net, parameters)
+        results = train(
+            net,
+            trainloader,
+            testloader,
+            epochs=1,
+            device=DEVICE,
+            learning_rate=self.learning_rate,
+            momentum=self.momentum,
+        )
+
+        self.writer.add_scalar("train_loss", results["train_loss"], step)
+        self.writer.add_scalar("train_accuracy", results["train_accuracy"], step)
+        self.writer.add_scalar("val_loss", results["val_loss"], step)
+        self.writer.add_scalar("val_accuracy", results["val_accuracy"], step)
+
+        self.set_step(step + 1)
+
+        return get_weights(net), len(trainloader.dataset), results
+
+    def evaluate(self, parameters, config):
+        set_weights(net, parameters)
+        step = self.get_step()
+        loss, accuracy = test(net, testloader)
+
+        self.writer.add_scalar("test_loss", loss, step)
+        self.writer.add_scalar("test_accuracy", accuracy, step)
+
+        return loss, len(testloader.dataset), {"accuracy": accuracy}
+
+
+def client_fn(context: Context):
+    """Create and return an instance of Flower `Client`."""
+    _ensure_data_loaded()
+    learning_rate = context.run_config.get("learning-rate", 0.001)
+    momentum = context.run_config.get("momentum", 0.9)
+    return FlowerClient(context, learning_rate, momentum).to_client()
+
+
+# Flower ClientApp
+app = ClientApp(
+    client_fn=client_fn,
+)

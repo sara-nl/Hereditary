@@ -1,0 +1,5 @@
+2026-05-18 14:23:32,717 [INFO] multi_node_cifar10.server_app: Starting 3 federated rounds
+2026-05-18 14:26:53,127 [INFO] multi_node_cifar10.server_app: Saved global model for round 1 to /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/round_1/global_model.pt
+2026-05-18 14:38:56,196 [INFO] multi_node_cifar10.server_app: Saved global model for round 2 to /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/round_2/global_model.pt
+2026-05-18 14:41:57,856 [INFO] multi_node_cifar10.server_app: Saved global model for round 3 to /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/round_3/global_model.pt
+2026-05-18 14:41:57,959 [INFO] multi_node_cifar10.server_app: Saved final global model to /gpfs/work3/1/hpmlprjs/ESM2/esm2_github_repo/flower_cifar_multinode/output/fl_cifar10_training/final_global_model.pt (122 keys)

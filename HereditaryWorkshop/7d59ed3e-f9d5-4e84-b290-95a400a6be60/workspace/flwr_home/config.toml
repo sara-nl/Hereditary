@@ -1,0 +1,6 @@
+[superlink]
+default = "nvflare"
+
+[superlink.nvflare]
+address = "127.0.0.1:51646"
+insecure = true

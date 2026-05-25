@@ -1,0 +1,3 @@
+git+https://github.com/NVIDIA/NVFlare.git@131abc708568218e91dd2518abf228a19e1cf48a
+flwr==1.29.0
+tensorboard

@@ -1,0 +1,19 @@
+# Runtime image for NVFlare server / client containers (Python 3.10, Flower + FLARE stack).
+FROM python:3.10-slim-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git curl unzip nano htop vim  \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+
+RUN uv export --frozen --no-dev --format requirements.txt > requirements.txt \
+    && uv pip install --system --no-cache -r requirements.txt
+
+WORKDIR /workspace
+COPY site-1.zip ./
+RUN unzip site-1.zip && rm site-1.zip
+# Provisioned startup kits are mounted at /workspace; run startup/sub_start.sh from there.
