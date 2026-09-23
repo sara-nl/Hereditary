@@ -2,7 +2,7 @@
 
 Docker with the example for the federated learning example.
 
-First sign into the collaborative platform [here](https://hereditary.dei.unipd.it/groupoffice/) and then download this [file](http://hereditary.dei.unipd.it/groupoffice/index.php?r=files/file/download&id=1640&security_token=HM8UXL67wVRCWfmhZdk5) in the same browser and place it into the current directory before starting.
+First sign into the collaborative platform [here](https://hereditary.dei.unipd.it/groupoffice/) and then download this [file](http://hereditary.dei.unipd.it/groupoffice/index.php?r=files/file/download&id=1640) (Files → id 1640) in the same browser and place it into the current directory before starting.
 
 ## GPU Build
 
