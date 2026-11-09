@@ -1,5 +1,7 @@
 # Federated Learning Workshop: CIFAR-10 with Privacy and Security
 
+**Research use only. Not a medical device.** This software was developed in the HEREDITARY project as a research prototype. It has not been assessed or certified under the EU Medical Device Regulation (EU) 2017/745. It must not be used to diagnose, treat, monitor or make any other decision about individual patients.
+
 This repository contains implementations and benchmarks for federated learning on the CIFAR-10 dataset using the Flower framework, with a focus on privacy-preserving techniques including secure aggregation and differential privacy.
 
 ## Project Structure
@@ -103,5 +105,4 @@ Each implementation can be configured through their respective `pyproject.toml` 
 This code is released under the [Apache License 2.0](LICENSE); see [NOTICE](NOTICE) for attribution.
 It is educational workshop material for federated learning infrastructure in the HEREDITARY project (Horizon Europe, GA 101137074).
 
-**Research use only. Not a medical device.** Do not use this code or anything derived from it for diagnosis, prognosis or treatment of individual patients.
 Report misuse or security issues to douwe.vanderwal@surf.nl.
