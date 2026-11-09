@@ -1,4 +1,7 @@
 # Hereditary workshop 3
+
+**Research use only. Not a medical device.** This software was developed in the HEREDITARY project as a research prototype. It has not been assessed or certified under the EU Medical Device Regulation (EU) 2017/745. It must not be used to diagnose, treat, monitor or make any other decision about individual patients.
+
 This branch contains the code for the workshop 3 of the Hereditary project. The readme will first explain how to download the data, then how to run the experiments. 
 ## Data download instructions
 ### CLEF
@@ -52,5 +55,4 @@ Keep in mind that if the serverside of your experiment is using specific package
 This code is released under the [Apache License 2.0](LICENSE); see [NOTICE](NOTICE) for attribution.
 It is educational workshop material for federated learning infrastructure in the HEREDITARY project (Horizon Europe, GA 101137074).
 
-**Research use only. Not a medical device.** Do not use this code or anything derived from it for diagnosis, prognosis or treatment of individual patients.
 Report misuse or security issues to douwe.vanderwal@surf.nl.
