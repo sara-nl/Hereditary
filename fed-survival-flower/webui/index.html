@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Global Model Inference</title>
+<style>
+:root {
+  --bg: #f7f7f5; --panel: #ffffff; --ink: #1b1b1a; --muted: #62615c; --faint: #8f8e88;
+  --line: #e4e3de; --soft: #f0efeb; --accent: #2a6fd6; --accent-soft: #e5eefb;
+  --orange: #d9622b; --good: #1f8a4c; --good-soft: #e3f3e9; --bad: #c0392b; --bad-soft: #fbe7e4;
+  --pos: #c8553d; --neg: #2a6fd6; --warn-soft: #fff5dc; --warn: #8a6100;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --panel: #1d1d1b; --ink: #ecebe6; --muted: #a8a7a0; --faint: #7a7973;
+    --line: #2f2f2c; --soft: #262624; --accent: #6ea2ff; --accent-soft: #1e2b44;
+    --orange: #f08a55; --good: #4cc27e; --good-soft: #173323; --bad: #ff7b6b; --bad-soft: #3a1d19;
+    --pos: #ff8a70; --neg: #6ea2ff; --warn-soft: #3a3016; --warn: #f2c65c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --panel: #1d1d1b; --ink: #ecebe6; --muted: #a8a7a0; --faint: #7a7973;
+  --line: #2f2f2c; --soft: #262624; --accent: #6ea2ff; --accent-soft: #1e2b44;
+  --orange: #f08a55; --good: #4cc27e; --good-soft: #173323; --bad: #ff7b6b; --bad-soft: #3a1d19;
+  --pos: #ff8a70; --neg: #6ea2ff; --warn-soft: #3a3016; --warn: #f2c65c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between;
+  padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--panel); }
+header h1 { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+header .sub { color: var(--muted); font-size: 13px; }
+.notice { font-size: 12px; color: var(--warn); background: var(--warn-soft); padding: 4px 10px; border-radius: 999px; }
+.layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; padding: 20px 24px 48px;
+  max-width: 1440px; margin: 0 auto; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; padding: 16px; } header { padding: 12px 16px; } }
+.layout > * { min-width: 0; }
+@media (max-width: 520px) { #model { min-width: 0 !important; width: 100% !important; } .field { grid-template-columns: minmax(0,1fr) 110px; } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 16px; }
+.card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+.card h3 { font-size: 15px; margin: 0 0 4px; }
+label.f { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+select, input { width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 9px; }
+select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.field { display: grid; grid-template-columns: 1fr 120px; gap: 8px; align-items: center; padding: 5px 0;
+  border-bottom: 1px dashed var(--line); }
+.field:last-child { border-bottom: 0; }
+.field .name { font-family: var(--mono); font-size: 12.5px; }
+.field .hint { display: block; font-family: inherit; font-size: 11px; color: var(--faint); }
+.field.dropped .name { color: var(--faint); }
+.field.dropped .name > .strike { text-decoration: line-through; }
+.field input, .field select { padding: 5px 7px; font-size: 13px; }
+.field input.missing { border-style: dashed; }
+.btn { font: inherit; border: 1px solid var(--line); background: var(--soft); color: var(--ink); padding: 6px 10px;
+  border-radius: 8px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.observed { margin-top: 10px; font-size: 13px; padding: 8px 10px; background: var(--soft); border-radius: 8px; }
+.tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+@media (max-width: 1100px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.tile .k { font-size: 12px; color: var(--muted); }
+.tile .v { font-size: 24px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 11.5px; color: var(--faint); }
+svg text { fill: var(--muted); font-size: 11px; font-family: system-ui, sans-serif; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 18px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 6px; }
+.chartwrap { position: relative; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; min-width: 210px;
+  font-variant-numeric: tabular-nums; }
+.tip b { font-family: var(--mono); font-weight: 600; }
+.step { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+.step:first-of-type { border-top: 0; padding-top: 0; }
+.num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.step p { margin: 2px 0 10px; color: var(--muted); }
+.formula { font-family: var(--mono); font-size: 13px; background: var(--soft); padding: 8px 10px; border-radius: 8px;
+  margin: 8px 0; overflow-x: auto; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+th, td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11.5px; }
+th:first-child, td:first-child { text-align: left; font-family: var(--mono); }
+tfoot td { font-weight: 700; border-bottom: 0; }
+td.imp { color: var(--warn); }
+.tag { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 999px; background: var(--warn-soft); color: var(--warn);
+  font-family: system-ui, sans-serif; margin-left: 4px; }
+.bar { position: relative; width: 160px; height: 12px; }
+.bar::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 1px solid var(--faint); }
+.bar span { position: absolute; top: 0; height: 12px; border-radius: 2px; }
+.ok { color: var(--good); background: var(--good-soft); }
+.nok { color: var(--bad); background: var(--bad-soft); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.checks li { margin: 6px 0; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; }
+.err { background: var(--bad-soft); color: var(--bad); padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; display: none; }
+.muted { color: var(--muted); } .small { font-size: 12px; }
+code { font-family: var(--mono); font-size: 12.5px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Global model inference: federated Cox survival model</h1>
+    <div class="sub">HEREDITARY workshop 8. Apply the model trained across sites to one patient, and see every step of the calculation.</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span class="notice">Research use only. Not a medical device.</span>
+    <select id="model" aria-label="Model" style="width:auto;min-width:220px"></select>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="card">
+      <h2>Patient</h2>
+      <div id="pickwrap">
+        <div class="row2">
+          <div><label class="f" for="site">Site</label><select id="site"></select></div>
+          <div><label class="f" for="split">Split</label>
+            <select id="split"><option value="test">test (held out)</option><option value="train">train</option></select></div>
+        </div>
+        <label class="f" for="patient">Patient</label>
+        <select id="patient"></select>
+      </div>
+      <div id="nodata" class="small muted" style="display:none">No site data found in the container: enter values by hand.</div>
+      <div id="observed" class="observed" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h2>Schema values <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400">(edit to explore)</span></h2>
+      <div id="form"></div>
+      <div class="btns">
+        <button class="btn" id="reset">Reset to patient</button>
+        <button class="btn" id="average">Average patient</button>
+        <button class="btn" id="clear">All missing</button>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">Leave a value empty to mark it missing: the model then uses the federated mean, exactly as at a site.</p>
+    </div>
+  </aside>
+
+  <main>
+    <div class="err" id="err"></div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card">
+      <h2 id="charttitle">Predicted survival</h2>
+      <div class="chartwrap">
+        <svg id="chart" viewBox="0 0 760 340" width="100%" role="img" aria-label="Predicted survival curve"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="card">
+      <h2>How the prediction is computed</h2>
+      <div id="workings"></div>
+    </div>
+
+    <div class="card">
+      <h2>Where the global model comes from</h2>
+      <div id="provenance"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { model: null, summary: null, patient: null, values: {}, result: null };
+const fmt = (v, d = 3) => (v === null || v === undefined || Number.isNaN(v)) ? "–" : Number(v).toFixed(d);
+const sgn = (v, d = 3) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d);
+const pct = (v) => (v * 100).toFixed(0) + "%";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const eventWord = () => state.summary.event === "DEATH" ? "death" : state.summary.event;
+const curveWord = () => state.summary.event === "DEATH" ? "survival" : `${state.summary.event}-free survival`;
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+function showError(e) { $("err").style.display = e ? "block" : "none"; $("err").textContent = e ? String(e.message || e) : ""; }
+
+// ---- setup ----------------------------------------------------------------------------
+async function init() {
+  try {
+    const { models } = await api("/api/models");
+    if (!models.length) throw new Error("No trained model found in outputs/: run the federated training first.");
+    $("model").innerHTML = models.map((m) =>
+      `<option value="${esc(m.id)}">${esc(m.kind)} · ${esc(m.dataset)} · ${esc(m.event)} (${esc(m.id)})</option>`).join("");
+    $("model").onchange = () => loadModel($("model").value);
+    $("site").onchange = loadPatients;
+    $("split").onchange = loadPatients;
+    $("patient").onchange = loadPatient;
+    $("reset").onclick = () => { if (state.patient) { state.values = { ...state.patient.values }; renderForm(); predict(); } };
+    $("average").onclick = () => { state.values = averageValues(); renderForm(); predict(); };
+    $("clear").onclick = () => { state.values = {}; renderForm(); predict(); };
+    await loadModel(models[0].id);
+  } catch (e) { showError(e); }
+}
+
+async function loadModel(id) {
+  showError(null);
+  state.model = id;
+  state.summary = await api(`/api/model?model=${encodeURIComponent(id)}`);
+  const s = state.summary;
+  const prev = $("site").value;
+  $("site").innerHTML = s.sites.map((x) =>
+    `<option value="${x}">${x}${s.n_train[x] ? " (training site)" : " (not in training)"}</option>`).join("");
+  if (s.sites.includes(prev)) $("site").value = prev;
+  $("pickwrap").style.display = s.sites.length ? "" : "none";
+  $("nodata").style.display = s.sites.length ? "none" : "";
+  renderProvenance();
+  if (s.sites.length) await loadPatients(); else { state.values = averageValues(); renderForm(); predict(); }
+}
+
+async function loadPatients() {
+  try {
+    const list = await api(`/api/patients?model=${encodeURIComponent(state.model)}&site=${$("site").value}&split=${$("split").value}`);
+    const prev = $("patient").value;
+    $("patient").innerHTML = list.map((p) =>
+      `<option value="${esc(p.id)}">${esc(p.id.slice(0, 12))}… · ${p.event ? esc(state.summary.event) : "censored"} at ${p.time.toFixed(1)} m</option>`).join("");
+    if (list.some((p) => p.id === prev)) $("patient").value = prev;
+    await loadPatient();
+  } catch (e) { showError(e); }
+}
+
+async function loadPatient() {
+  try {
+    state.patient = await api(`/api/patient?model=${encodeURIComponent(state.model)}&site=${$("site").value}&split=${$("split").value}&id=${encodeURIComponent($("patient").value)}`);
+    state.values = { ...state.patient.values };
+    const o = state.patient.observed;
+    $("observed").style.display = "";
+    $("observed").innerHTML = `Observed outcome: <b>${o.event ? esc(o.name) : "censored"}</b> at ${o.time.toFixed(1)} months` +
+      `<div class="small muted">Not used by the model: shown only to compare with the prediction.</div>`;
+    renderForm();
+    await predict();
+  } catch (e) { showError(e); }
+}
+
+function averageValues() {
+  // every numeric column at the federated mean (z = 0); categorical at the reference level
+  const s = state.summary, v = {};
+  s.features.forEach((f, i) => { if (!f.includes("=")) v[f] = +s.mean[i].toFixed(4); });
+  for (const [col, lv] of Object.entries(s.levels)) v[col] = lv[0];
+  return v;
+}
+
+// ---- form -----------------------------------------------------------------------------
+const UNITS = { age_onset: "years", onset_bulbar: "0 / 1", diagnostic_delay: "months", time_since_onset: "months",
+  bmi: "kg/m²", alsfrs_r_first: "0–48", alsfrs_r_last: "0–48", alsfrs_r_slope: "points/month",
+  fvc_last: "% predicted", fvc_n: "count", sex: "", C9orf72: "" };
+
+function renderForm() {
+  const s = state.summary;
+  $("form").innerHTML = Object.entries(s.schema).map(([col, kind]) => {
+    const dropped = s.dropped[col];
+    const v = state.values[col];
+    const i = s.features.indexOf(col);
+    const hint = dropped ? "not used: dropped by federated preprocessing" :
+      kind === "numeric" ? `${UNITS[col] || ""}${i >= 0 ? ` · mean ${fmt(s.mean[i], 2)}` : ""}` : UNITS[col];
+    let input;
+    if (kind === "numeric") {
+      input = `<input type="number" step="any" data-col="${col}" value="${v == null ? "" : +Number(v).toFixed(3)}" placeholder="missing" class="${v == null ? "missing" : ""}" ${dropped ? "disabled" : ""}>`;
+    } else {
+      const levels = [...new Set([...(s.levels[col] || []), ...(v != null ? [v] : []), ...(col === "C9orf72" ? ["normal", "expansion"] : []), ...(col === "sex" ? ["Female", "Male"] : [])])];
+      input = `<select data-col="${col}" ${dropped ? "disabled" : ""}><option value="">(missing)</option>` +
+        levels.map((l) => `<option ${l === v ? "selected" : ""}>${esc(l)}</option>`).join("") + "</select>";
+    }
+    return `<div class="field ${dropped ? "dropped" : ""}" title="${esc(dropped || "")}"><span class="name"><span class="${dropped ? "strike" : ""}">${col}</span><span class="hint">${esc(hint)}</span></span>${input}</div>`;
+  }).join("");
+  let timer;
+  $("form").querySelectorAll("[data-col]").forEach((el) => {
+    el.addEventListener("input", () => {
+      const col = el.dataset.col, raw = el.value.trim();
+      state.values[col] = raw === "" ? null : (s.schema[col] === "numeric" ? Number(raw) : raw);
+      if (el.tagName === "INPUT") el.classList.toggle("missing", raw === "");
+      clearTimeout(timer); timer = setTimeout(predict, 200);
+    });
+  });
+}
+
+// ---- prediction -----------------------------------------------------------------------
+async function predict() {
+  try {
+    showError(null);
+    const fromPatient = state.patient && JSON.stringify(state.values) === JSON.stringify(state.patient.values);
+    state.result = await api("/api/predict", { model: state.model, values: state.values,
+      site: state.summary.sites.length ? $("site").value : null, split: $("split").value });
+    state.result.fromPatient = fromPatient;
+    renderTiles(); renderChart(); renderWorkings();
+  } catch (e) { showError(e); }
+}
+
+function renderTiles() {
+  const r = state.result, ev = eventWord();
+  const tiles = r.horizons.map((h) => ({ k: `P(${ev} by ${h.t} months)`, v: pct(h.P), s: `S(${h.t}) = ${fmt(h.S)}` }));
+  tiles.push({ k: `Median time to ${ev}`, v: r.median === null ? `> ${r.median_limit}` : `${r.median.toFixed(0)} m`, s: "first month with S(t) ≤ 0.5" });
+  tiles.push({ k: "Hazard vs. average patient", v: `${r.hazard_ratio.toFixed(2)}×`, s: `risk score x·β = ${sgn(r.lp)}` });
+  $("tiles").innerHTML = tiles.map((t) => `<div class="tile"><div class="k">${t.k}</div><div class="v">${t.v}</div><div class="s">${t.s}</div></div>`).join("");
+}
+
+// ---- chart ----------------------------------------------------------------------------
+function renderChart() {
+  const r = state.result, svg = $("chart");
+  const W = 760, H = 340, m = { l: 46, r: 16, t: 14, b: 38 };
+  const tMax = r.curve.t[r.curve.t.length - 1];
+  const X = (t) => m.l + (t / tMax) * (W - m.l - m.r), Y = (s) => m.t + (1 - s) * (H - m.t - m.b);
+  const stepPath = (ts, ss) => {
+    let d = `M${X(ts[0])},${Y(ss[0])}`;
+    for (let i = 1; i < ts.length; i++) d += `H${X(ts[i])}V${Y(ss[i])}`;
+    return d;
+  };
+  const css = getComputedStyle(document.documentElement), c = (n) => css.getPropertyValue(n).trim();
+  let g = "";
+  g += `<rect x="${X(0)}" y="${m.t}" width="${X(r.window) - X(0)}" height="${H - m.t - m.b}" fill="${c("--soft")}"/>`;
+  g += `<text x="${X(r.window / 2)}" y="${m.t + 12}" text-anchor="middle" style="font-size:10px">features</text>`;
+  for (let s = 0; s <= 1.0001; s += 0.25) {
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(s)}" y2="${Y(s)}" stroke="${c("--line")}"/>`;
+    g += `<text x="${m.l - 8}" y="${Y(s) + 4}" text-anchor="end">${s.toFixed(2)}</text>`;
+  }
+  for (let t = 0; t <= tMax; t += 12) {
+    g += `<line x1="${X(t)}" x2="${X(t)}" y1="${H - m.b}" y2="${H - m.b + 4}" stroke="${c("--faint")}"/>`;
+    g += `<text x="${X(t)}" y="${H - m.b + 16}" text-anchor="middle">${t}</text>`;
+  }
+  g += `<text x="${(W + m.l) / 2}" y="${H - 4}" text-anchor="middle">months since Time 0 (first ALSFRS-R)</text>`;
+  g += `<text transform="translate(12 ${(H - m.b + m.t) / 2}) rotate(-90)" text-anchor="middle">${curveWord()} probability</text>`;
+  g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(0.5)}" y2="${Y(0.5)}" stroke="${c("--faint")}" stroke-dasharray="2 3"/>`;
+
+  const km = r.kaplan_meier;
+  if (km) {
+    const kt = [0, ...km.time.filter((t) => t <= tMax), tMax];
+    const ks = [1, ...km.survival.slice(0, kt.length - 2)]; ks.push(ks[ks.length - 1]);
+    g += `<path d="${stepPath(kt, ks)}" fill="none" stroke="${c("--faint")}" stroke-width="1.5"/>`;
+  }
+  g += `<path d="${stepPath(r.curve.t, r.curve.S_average)}" fill="none" stroke="${c("--muted")}" stroke-width="1.2" stroke-dasharray="1 3"/>`;
+  if (r.twin) g += `<path d="${stepPath(r.curve.t, r.twin.S)}" fill="none" stroke="${c("--orange")}" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+  g += `<path d="${stepPath(r.curve.t, r.curve.S)}" fill="none" stroke="${c("--accent")}" stroke-width="2.4"/>`;
+  for (const h of r.horizons) {
+    g += `<circle cx="${X(h.t)}" cy="${Y(h.S)}" r="4.5" fill="${c("--accent")}" stroke="${c("--panel")}" stroke-width="2"/>`;
+    g += `<text x="${X(h.t) + 7}" y="${Y(h.S) - 7}" style="fill:${c("--ink")};font-weight:600">${pct(h.P)}</text>`;
+  }
+  const o = r.fromPatient && state.patient ? state.patient.observed : null;
+  if (o && o.time <= tMax) {
+    const i = r.curve.t.findLastIndex((t) => t <= o.time), x = X(o.time), y = Y(r.curve.S[Math.max(i, 0)]);
+    g += o.event ? `<path d="M${x - 5},${y - 5}L${x + 5},${y + 5}M${x - 5},${y + 5}L${x + 5},${y - 5}" stroke="${c("--ink")}" stroke-width="2.4"/>`
+      : `<circle cx="${x}" cy="${y}" r="5" fill="${c("--panel")}" stroke="${c("--ink")}" stroke-width="2"/>`;
+  }
+  g += `<line id="hover" y1="${m.t}" y2="${H - m.b}" stroke="${c("--faint")}" style="display:none"/>`;
+  g += `<rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" id="hit"/>`;
+  svg.innerHTML = g;
+
+  $("charttitle").textContent = `Predicted ${curveWord()}`;
+  const kind = state.summary.kind;
+  $("legend").innerHTML = [
+    `<span><i style="border-color:var(--accent);border-width:3px"></i>this patient (${kind} model)</span>`,
+    r.twin ? `<span><i style="border-color:var(--orange);border-top-style:dashed"></i>this patient (${r.twin.kind} model, should overlap)</span>` : "",
+    `<span><i style="border-color:var(--muted);border-top-style:dotted"></i>average patient (x·β = 0)</span>`,
+    km ? `<span><i style="border-color:var(--faint)"></i>training population (Kaplan-Meier)</span>` : "",
+    o ? `<span>${o.event ? "✕" : "○"} observed: ${o.event ? esc(o.name) : "censored"} at ${o.time.toFixed(1)} m</span>` : "",
+  ].join("");
+
+  const hit = $("hit"), tip = $("tip"), line = $("hover");
+  hit.onmousemove = (ev) => {
+    const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const t = Math.max(0, Math.min(tMax, ((p.x - m.l) / (W - m.l - m.r)) * tMax));
+    const i = r.curve.t.findLastIndex((u) => u <= t);
+    const H0 = r.curve.H0[i], S = r.curve.S[i];
+    line.setAttribute("x1", X(t)); line.setAttribute("x2", X(t)); line.style.display = "";
+    tip.innerHTML = `<div><b>t = ${t.toFixed(1)}</b> months</div>` +
+      `<div>H₀(t) = ${fmt(H0, 4)}</div>` +
+      `<div>S(t) = exp(−${fmt(H0, 4)} × ${fmt(r.hazard_ratio, 3)}) = <b>${fmt(S, 3)}</b></div>` +
+      `<div class="muted">average patient: ${fmt(r.curve.S_average[i], 3)}</div>` +
+      (r.twin ? `<div class="muted">${r.twin.kind} model: ${fmt(r.twin.S[i], 3)}</div>` : "");
+    tip.style.display = "block";
+    const box = svg.getBoundingClientRect(), wx = (X(t) / W) * box.width;
+    tip.style.left = (wx > box.width / 2 ? wx - tip.offsetWidth - 12 : wx + 12) + "px";
+    tip.style.top = "12px";
+  };
+  hit.onmouseleave = () => { tip.style.display = "none"; line.style.display = "none"; };
+}
+
+// ---- workings -------------------------------------------------------------------------
+function renderWorkings() {
+  const r = state.result, s = state.summary;
+  const maxC = Math.max(...r.steps.map((x) => Math.abs(x.contribution)), 1e-9);
+  const rawCell = (x) => {
+    if (x.kind === "dummy") return x.missing ? "missing" : `${esc(x.raw)} → ${x.x}`;
+    return x.missing ? "missing" : fmt(x.raw, 3);
+  };
+  const enc = r.steps.map((x) => `<tr>
+      <td>${esc(x.feature)}${x.missing ? '<span class="tag">imputed</span>' : ""}</td>
+      <td>${rawCell(x)}</td><td class="${x.missing ? "imp" : ""}">${fmt(x.used, 3)}</td>
+      <td>${fmt(x.mean, 3)}</td><td>${fmt(x.std, 3)}</td><td><b>${sgn(x.z)}</b></td></tr>`).join("");
+  const lin = r.steps.map((x) => {
+    const w = (Math.abs(x.contribution) / maxC) * 50, pos = x.contribution >= 0;
+    return `<tr><td>${esc(x.feature)}</td><td>${sgn(x.z)}</td><td>${sgn(x.beta, 4)}</td><td>${fmt(Math.exp(x.beta), 3)}</td>
+      <td><b>${sgn(x.contribution, 4)}</b></td>
+      <td><div class="bar"><span style="${pos ? `left:50%` : `right:50%`};width:${w}%;background:var(${pos ? "--pos" : "--neg"})"></span></div></td></tr>`;
+  }).join("");
+  const top = [...r.steps].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution)).slice(0, 3)
+    .map((x) => `<code>${esc(x.feature)}</code> (${x.contribution >= 0 ? "raises" : "lowers"} risk)`).join(", ");
+  const hz = r.horizons.map((h) => `<tr><td>${h.t} months</td><td>${fmt(h.H0, 4)}</td><td>${fmt(h.H, 4)}</td><td>${fmt(h.S, 4)}</td><td><b>${pct(h.P)}</b></td></tr>`).join("");
+  const dropped = r.dropped.map((d) => `<li><code>${esc(d.column)}</code> = ${d.raw === null ? "missing" : esc(d.raw)}: ignored, ${esc(d.reason)}</li>`).join("");
+  const ok = (cond, text) => `<li><span class="badge ${cond ? "ok" : "nok"}">${cond ? "✓" : "✗"}</span> ${text}</li>`;
+  const pop = r.population;
+
+  $("workings").innerHTML = `
+  <div class="step"><div class="num">1</div><div>
+    <h3>Encode the patient with the federated preprocessing artifact</h3>
+    <p>The means and standard deviations were not computed from any single site. Every training site sent only counts, sums and sums of squares (stage 1, <code>query.summary</code>), and the server combined them. A missing value is replaced by the federated mean, and every feature is z-scored so all sites encode identically.</p>
+    <div class="formula">z<sub>i</sub> = (x<sub>i</sub> − mean<sub>i</sub>) / sd<sub>i</sub> &nbsp;&nbsp; (missing x<sub>i</sub> → mean<sub>i</sub>, so z<sub>i</sub> = 0)</div>
+    <div class="tablewrap"><table><thead><tr><th>feature</th><th>patient value</th><th>value used</th><th>federated mean</th><th>federated sd</th><th>z</th></tr></thead><tbody>${enc}</tbody></table></div>
+    ${dropped ? `<p style="margin-top:10px">Columns in the schema that the model does not use:</p><ul class="small">${dropped}</ul>` : ""}
+  </div></div>
+
+  <div class="step"><div class="num">2</div><div>
+    <h3>Risk score: weighted sum with the global coefficients β</h3>
+    <p>β is the global model: the exact pooled Cox fit, found by federated Newton steps (WebDISCO) in which each site sent only risk-set sums. exp(β<sub>i</sub>) is the hazard ratio for one standard deviation more of feature i. The largest contributions for this patient: ${top}.</p>
+    <div class="tablewrap"><table><thead><tr><th>feature</th><th>z</th><th>β</th><th>HR per sd</th><th>z × β</th><th style="text-align:center">← lowers risk · raises risk →</th></tr></thead>
+      <tbody>${lin}</tbody><tfoot><tr><td>x·β = Σ z × β</td><td></td><td></td><td></td><td>${sgn(r.lp, 4)}</td><td></td></tr></tfoot></table></div>
+  </div></div>
+
+  <div class="step"><div class="num">3</div><div>
+    <h3>Hazard ratio relative to the average patient</h3>
+    <p>The Cox model assumes proportional hazards: at every moment, this patient's hazard is a fixed multiple of the hazard of a patient with every feature at the federated mean (all z = 0).</p>
+    <div class="formula">HR = exp(x·β) = exp(${sgn(r.lp, 4)}) = <b>${fmt(r.hazard_ratio, 4)}</b></div>
+    ${pop ? `<p>Among the ${pop.n} patients of site ${esc(pop.site)} (${esc(pop.split)} split), <b>${pop.percentile.toFixed(0)}%</b> have a lower risk score than this patient.</p>${popStrip(pop, r.lp)}` : ""}
+  </div></div>
+
+  <div class="step"><div class="num">4</div><div>
+    <h3>Survival curve: baseline hazard × hazard ratio</h3>
+    <p>H₀(t) is the Breslow baseline cumulative hazard. The server computed it from the sites' round-A sums at the final β: H₀(t) = Σ<sub>t<sub>k</sub> ≤ t</sub> d<sub>k</sub> / S0<sub>k</sub>, over the public monthly grid, so no site revealed its exact event times. Hover over the chart to see this at any month.</p>
+    <div class="formula">S(t | x) = exp(−H₀(t) × exp(x·β)) &nbsp;&nbsp;&nbsp; P(${eventWord()} by t) = 1 − S(t | x)</div>
+    <div class="tablewrap"><table><thead><tr><th>t</th><th>H₀(t)</th><th>H(t) = H₀ × HR</th><th>S(t) = exp(−H)</th><th>P(${eventWord()} by t)</th></tr></thead><tbody>${hz}</tbody></table></div>
+    <p style="margin-top:8px">Predicted median: ${r.median === null ? `not reached by ${r.median_limit} months` : `<b>${r.median.toFixed(0)} months</b>, the first grid month where S(t) ≤ 0.5`}.</p>
+  </div></div>
+
+  <div class="step"><div class="num">5</div><div>
+    <h3>Checks</h3>
+    <ul class="checks" style="list-style:none;padding:0;margin:0">
+      ${ok(r.check.encode_max_diff < 1e-9, `The step-by-step z values equal <code>features.encode()</code>, the function the sites use (max difference ${r.check.encode_max_diff.toExponential(1)}).`)}
+      ${ok(r.check.survival_max_diff < 1e-9, `The curve equals <code>cox.survival()</code>, as used by <code>predict.py</code> (max difference ${r.check.survival_max_diff.toExponential(1)}).`)}
+      ${r.twin ? ok(Math.abs(r.twin.lp - r.lp) < 1e-6, `The ${esc(r.twin.kind)} model (<code>${esc(r.twin.model)}</code>) gives the same risk score: ${sgn(r.twin.lp, 6)} vs ${sgn(r.lp, 6)} (difference ${Math.abs(r.twin.lp - r.lp).toExponential(1)}). The federated model is the pooled model.`) : `<li class="muted small">Run <code>centralised.py</code> too (<code>./ws8.sh all</code>) to compare this patient against the pooled model.</li>`}
+    </ul>
+  </div></div>`;
+}
+
+function popStrip(pop, lp) {
+  const lo = Math.min(pop.lp[0], lp), hi = Math.max(pop.lp[pop.lp.length - 1], lp);
+  const W = 600, H = 46, X = (v) => 10 + ((v - lo) / (hi - lo || 1)) * (W - 20);
+  const bins = 40, counts = new Array(bins).fill(0);
+  pop.lp.forEach((v) => counts[Math.min(bins - 1, Math.floor(((v - lo) / (hi - lo || 1)) * bins))]++);
+  const mx = Math.max(...counts), bw = (W - 20) / bins;
+  let g = counts.map((n, i) => `<rect x="${10 + i * bw + 0.5}" y="${32 - (n / mx) * 28}" width="${bw - 1}" height="${(n / mx) * 28}" fill="var(--line)"/>`).join("");
+  g += `<line x1="${X(lp)}" x2="${X(lp)}" y1="0" y2="34" stroke="var(--accent)" stroke-width="2.5"/>`;
+  g += `<text x="10" y="45">${lo.toFixed(1)} (lower risk)</text><text x="${W - 10}" y="45" text-anchor="end">(higher risk) ${hi.toFixed(1)}</text>`;
+  g += `<text x="${X(lp)}" y="45" text-anchor="middle" style="fill:var(--accent);font-weight:600">this patient</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:600px" role="img" aria-label="Risk score distribution">${g}</svg>`;
+}
+
+// ---- provenance -----------------------------------------------------------------------
+function renderProvenance() {
+  const s = state.summary;
+  const sites = Object.keys(s.n_train).sort();
+  const rows = sites.map((x) => `<tr><td>${x}</td><td>${s.n_train[x]}</td><td>${s.test_cindex[x] == null ? "–" : fmt(s.test_cindex[x], 4)}</td></tr>`).join("");
+  const ll = s.loglik || [];
+  let spark = "";
+  if (ll.length > 1) {
+    const W = 260, H = 60, lo = Math.min(...ll), hi = Math.max(...ll);
+    const pts = ll.map((v, i) => `${8 + (i / (ll.length - 1)) * (W - 16)},${6 + (1 - (v - lo) / (hi - lo || 1)) * (H - 20)}`);
+    spark = `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="Log-likelihood per Newton iteration">
+      <polyline points="${pts.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      ${pts.map((p) => `<circle cx="${p.split(",")[0]}" cy="${p.split(",")[1]}" r="2.5" fill="var(--accent)"/>`).join("")}
+      <text x="8" y="${H - 2}">iteration 0</text><text x="${W - 8}" y="${H - 2}" text-anchor="end">${ll.length - 1}</text></svg>`;
+  }
+  const dropped = Object.entries(s.dropped).map(([c, r]) => `<li><code>${esc(c)}</code>: ${esc(r)}</li>`).join("");
+  $("provenance").innerHTML = `
+    <dl class="kv">
+      <dt>Trained with</dt><dd>${esc(s.trained_with)}</dd>
+      <dt>Outcome</dt><dd>${esc(s.event)} (${esc(s.dataset)}); every other outcome counts as censored</dd>
+      <dt>Features</dt><dd>${s.features.length}, from data up to month ${s.window} (the landmark window)</dd>
+      <dt>Time grid</dt><dd>public monthly grid, step ${s.time_step} month, up to ${s.time_max} months</dd>
+      <dt>Ridge penalty</dt><dd>${s.l2}</dd>
+      ${s.iterations ? `<dt>Newton iterations</dt><dd>${s.iterations}</dd>` : ""}
+      <dt>Model file</dt><dd><code>outputs/${esc(s.id)}</code></dd>
+    </dl>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:14px;align-items:flex-start">
+      <div class="tablewrap" style="min-width:260px"><table><thead><tr><th>training site</th><th>patients</th><th>test C-index</th></tr></thead><tbody>${rows}</tbody></table>
+        <p class="small muted">Each site evaluates the model on its own test split, so there is no global C-index.</p></div>
+      ${spark ? `<div><div class="small muted">Partial log-likelihood per federated Newton iteration</div>${spark}</div>` : ""}
+    </div>
+    ${dropped ? `<p class="small" style="margin-bottom:0">Dropped by the federated coverage rule (min. ${pct(s.min_coverage)} observed at every site):</p><ul class="small" style="margin-top:4px">${dropped}</ul>` : ""}`;
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+__pycache__
+.env
+
+# Python packaging and virtual environments
+*.egg-info
+.venv/
+
+# Flower (created by `flwr run` against a SuperLink) and run outputs
+.flwr/
+outputs/
+
+# The iDPP data (see README.md)
+/data

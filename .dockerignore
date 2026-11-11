@@ -1,0 +1,13 @@
+# Keep the build context small and the image free of data and local state
+data/
+outputs/
+**/outputs/
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.egg-info/
+**/.flwr/
+.git/
+.DS_Store
+**/.DS_Store
+.env

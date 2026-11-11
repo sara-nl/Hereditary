@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fed-survival-flower"
+version = "1.0.0"
+description = "Federated Cox survival model for ALS across two sites with the Flower messaging API"
+license = "Apache-2.0"
+authors = [
+    {name = "d0uwe"},
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+keywords = ["federated learning", "survival analysis", "Cox model", "ALS"]
+
+# Dependencies for the Flower App and the stand-alone scripts
+dependencies = [
+    "flwr[simulation]==1.43.0",
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "scikit-survival>=0.23",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.1",
+    "isort>=5.13",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["fed_survival"]
+
+# Code style: run `isort . && black .` in this folder
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.flwr.app]
+publisher = "hereditary"
+
+# Point to your ServerApp and ClientApp objects
+[tool.flwr.app.components]
+serverapp = "fed_survival.server_app:app"
+clientapp = "fed_survival.client_app:app"
+
+# The run config: read by the Flower app (context.run_config) AND by centralised.py,
+# compare.py and predict.py, so there is one source of truth for every setting.
+[tool.flwr.app.config]
+data-path = "../data/ALS_federated"  # contains T/, L/, U/; relative to this folder
+sites = "T,L"               # training sites
+dataset = "datasetC"        # datasetA (NIV), datasetB (PEG) or datasetC (death only)
+event = "DEATH"             # event = Occured & Type == event; every other outcome is censored
+window = 6.0                # features use data up to this month only
+time-step = 1.0             # the public time grid of the Cox model: 1, 2, ... months
+time-max = 600.0            # ... up to 600 months
+preprocessing = "flower"    # "flower": stage 1 over Flower; "file": load preprocessing-file
+preprocessing-file = ""     # e.g. the artifact produced by the FA network
+min-coverage = 0.5          # keep a column only if observed for >= 50% at EVERY site
+l2 = 0.0                    # ridge penalty; 0 = plain Cox
+max-iter = 25               # Newton iterations
+output-dir = "outputs"
+
+# Flower 1.43 no longer reads federations from this file: SuperLink connections live in
+# ~/.flwr/config.toml (see "SuperLink connections" in README.md). The simulation needs no
+# entry: `flwr run . --stream` uses the built-in "local" connection with 2 virtual SuperNodes
+# (partition-id 0 = site T, 1 = site L).

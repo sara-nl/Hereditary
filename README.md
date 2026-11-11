@@ -1,95 +1,37 @@
-# Federated learning workshop
+# Hereditary workshop 8
 
 **Research use only. Not a medical device.** This software was developed in the HEREDITARY project as a research prototype. It has not been assessed or certified under the EU Medical Device Regulation (EU) 2017/745. It must not be used to diagnose, treat, monitor or make any other decision about individual patients.
 
-## Day 2 practical
+Workshop 8 is about federated survival analysis for ALS on the BRAINTEASER / iDPP data. We train a Cox model for time to death across two sites with Flower: Turin, and Lisbon, which stands in for the Answer ALS site. The federated model turns out to be exactly the model you would get by pooling the data, and we use it to predict the survival curve of a held-out patient. The preprocessing (which columns to keep, category levels, means and standard deviations) is itself a federated analytics step. In the main exercise you replace it with the HEREDITARY federated analytics network.
 
-```python client.py --partition-id 0```
+**Docker:** to run this workshop in a container without installing anything, see [DOCKER.md](DOCKER.md) (`./ws8.sh` runs everything).
 
-Please replace 0 with a number 0-5
+all workshops use UV to install dependencies (see this page on how to install: https://docs.astral.sh/uv/getting-started/installation/)
 
-## Software installation
-It would be helpful if you could install the following software before the workshop. If you have any trouble, we can help you during the workshop.
+## Workshop Contents
 
-### Installing Docker
-Can be done with instructions from https://www.docker.com/get-started/ And docker compose https://docs.docker.com/compose/install/linux/
+### fed-survival-flower
+A Flower app (messaging API) for a federated Cox model (WebDISCO), trained on the sites' own data. The folder also has a centralised baseline, a comparison of the federated and pooled models, and a live prediction demo for one patient. See its README for setup, the commands and the exercises.
 
+### SCHEMA.md
+The common input schema for Turin and Answer ALS: the columns, their sources and units, and how they are coded. It also explains which model we train first and why, and what leaves a site. This is the document for the discussion with Padua.
 
-### Building your local container
-If you prefer to build your container, use the following Dockerfile. This will install all the required software in a container.
+## Data
+The data is the iDPP 2023 challenge data, partitioned by centre. Download it from the HEREDITARY collaborative platform at https://hereditary.dei.unipd.it, under Files -> Hereditary/Data/FederatedLearning. The code expects this layout:
 
-```Dockerfile
-# Description: Dockerfile for the hereditary project
-#Start from the base pytorch image
-ARG PYTORCH_IMAGE=nvcr.io/nvidia/pytorch:23.12-py3
-FROM ${PYTORCH_IMAGE}
-
-#Set the working directory
-WORKDIR /mnt/workspace/
-
-RUN python3 -m pip install -U pip
-RUN python3 -m pip install -U setuptools
-
-# RUN python3 -m pip install torch torchvision torchaudio
-#Install the required packages
-#General python packages
-
-RUN python3 -m pip install matplotlib transformers evaluate datasets scikit-learn tqdm pillow pytorch_lightning jupyter notebook
-#FL frameworks
-##NVFlare
-# RUN git clone https://github.com/NVIDIA/NVFlare.git --branch ${NVF_BRANCH} --single-branch NVFlare
-# RUN cd NVFlare/
-# RUN python3 setup.py install
-# RUN cd -
-RUN python3 -m pip install nvflare
-##Flower
-RUN python3 -m pip install flwr flwr_datasets
-##Pysyft
-# RUN git clone https://github.com/OpenMined/PySyft.git
-# RUN cd PySyft
-# RUN python3 setup.py install
-# RUN python3 setup.py test
-# RUN cd -
-RUN python3 -m pip install syft
+```
+ALS_federated/
+├── T/                       Turin
+│   ├── datasetA/            NIV or death
+│   │   ├── train/datasetA_train-{static-vars,visits,outcome,environmental}.csv
+│   │   └── test/datasetA_test-{static-vars,visits,outcome,environmental}.csv
+│   ├── datasetB/            PEG or death
+│   └── datasetC/            death only
+├── L/                       Lisbon
+└── U/                       a small centre, not a training site by default
 ```
 
-You can build the container using the following command
-
-```bash
-docker build -t fedai .
-```
-
-You can run the container using the following command
-
-```bash
-docker run -it --rm --gpus all -v $(pwd):/mnt/workspace/ fedai
-```
-
-### Using a virtual environment
-If you prefer to install the software on your local machine, follow the instructions below. This method is more flexible and allows you to customize the software installation. It also relies on you setting up all your (GPU) drivers and  libraries correctly.
-
-First, create a virtual environment.
-
-```bash
-python3 -m venv fedai
-```
-
-Then, activate the virtual environment.
-
-```bash
-source fedai/bin/activate
-```
-
-Then install the required software
-
-```bash
-python3 -m pip install -U pip
-python3 -m pip install -U setuptools
-python3 -m pip install matplotlib scikit-learn torch torchvision torchaudio transformers evaluate datasets tqdm pillow pytorch_lightning jupyter notebook
-python3 -m pip install nvflare
-python3 -m pip install flwr flwr-datasets
-python3 -m pip install syft
-```
+Extract it into a `data/` folder in the root of this repository, so that you have `data/ALS_federated/T/...`: that is the default `data-path` in `fed-survival-flower/pyproject.toml`, and `data/` is gitignored. If your data is somewhere else, change `data-path`.
 
 ## License and intended use
 

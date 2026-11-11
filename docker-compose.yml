@@ -1,0 +1,58 @@
+# Workshop 8 with Docker Compose. Put the data in ./data (so that ./data/ALS_federated/T/... exists).
+#
+#   Simulation (everything in one container):
+#     docker compose run --rm ws8                       # = all: centralised, federated, compare, predict
+#     docker compose run --rm ws8 predict --site L
+#
+#   Deployment Engine (a SuperLink and one SuperNode per site, each in its own container):
+#     docker compose --profile deploy up --build --abort-on-container-exit --exit-code-from deploy-run
+#     docker compose --profile deploy down
+#
+# Results land in ./outputs. On Linux, if ./outputs is not writable, run with
+#   UID=$(id -u) GID=$(id -g) docker compose ...
+
+x-ws8: &ws8
+  image: hereditary-ws8
+  build: .
+  user: "${UID:-1000}:${GID:-1000}"
+  shm_size: 2gb
+  environment:
+    RUN_CONFIG: ${RUN_CONFIG:-}
+  volumes:
+    - ./data:/data:ro
+    - ./outputs:/outputs
+
+services:
+  ws8:
+    <<: *ws8
+    profiles: [sim]   # docker compose run --rm ws8 (no "up" needed)
+    command: ["all"]
+
+  ui:   # docker compose --profile sim up ui  ->  http://localhost:8000
+    <<: *ws8
+    profiles: [sim]
+    command: ["ui"]
+    ports: ["127.0.0.1:8000:8000"]   # this machine only: the UI shows patient data
+
+  superlink:
+    <<: *ws8
+    profiles: [deploy]
+    command: ["superlink"]
+
+  supernode-t:
+    <<: *ws8
+    profiles: [deploy]
+    command: ["supernode", "T", "superlink"]
+    depends_on: [superlink]
+
+  supernode-l:
+    <<: *ws8
+    profiles: [deploy]
+    command: ["supernode", "L", "superlink"]
+    depends_on: [superlink]
+
+  deploy-run:
+    <<: *ws8
+    profiles: [deploy]
+    command: ["deploy-run", "superlink"]
+    depends_on: [superlink, supernode-t, supernode-l]
