@@ -17,7 +17,7 @@ A Flower app (messaging API) for a federated Cox model (WebDISCO), trained on th
 The common input schema for Turin and Answer ALS: the columns, their sources and units, and how they are coded. It also explains which model we train first and why, and what leaves a site. This is the document for the discussion with Padua.
 
 ## Data
-The data is the iDPP 2023 challenge data, partitioned by centre. Download it from the HEREDITARY collaborative platform at https://hereditary.dei.unipd.it, under Files -> Hereditary/Data/FederatedLearning. The code expects this layout:
+The data is the iDPP 2023 challenge data, partitioned by centre. Download it from the HEREDITARY collaborative platform at https://hereditary.dei.unipd.it, under Files -> Hereditary/Data/FederatedLearning. In case you are signed in, you can directly download the data by clicking [here](http://hereditary.dei.unipd.it/groupoffice/#file/1640). The code expects this layout:
 
 ```
 ALS_federated/
