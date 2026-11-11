@@ -164,11 +164,11 @@ Open four terminals. In each one: `cd fed-survival-flower`, activate the venv an
 
 ```toml
 [superlink.local-superlink]
-address = "127.0.0.1:9093"
+address = "127.0.0.1:8000"
 insecure = true
 
 [superlink.surf-superlink]
-address = "SURF_SUPERLINK_IP:9093"   # see the group page
+address = "SURF_SUPERLINK_IP:8000"   # see the group page
 insecure = true
 ```
 
@@ -176,12 +176,12 @@ insecure = true
 
 ```bash
 # 1. The server (SuperLink). Start it in this folder: the ServerApp writes outputs/ relative to it
-flower-superlink --insecure --port 9093                    # add --host 0.0.0.0 for remote SuperNodes
+flower-superlink --insecure                    # add --host 0.0.0.0 for remote SuperNodes
 
 # 2. One SuperNode per site
-flower-supernode --insecure --superlink SUPERLINK_IP:9093 --port 9094 \
+flower-supernode --insecure --superlink SUPERLINK_IP:8000 --port 9094 \
     --node-config "site='T' data-path='/abs/path/to/ALS_federated'"
-flower-supernode --insecure --superlink SUPERLINK_IP:9093 --port 9095 \
+flower-supernode --insecure --superlink SUPERLINK_IP:8000 --port 9095 \
     --node-config "site='L' data-path='/abs/path/to/ALS_federated'"
 
 # 3. Start the run
