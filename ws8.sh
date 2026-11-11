@@ -3,7 +3,7 @@
 #
 #   ./ws8.sh                 build the image if needed, then run everything
 #   ./ws8.sh predict --site L
-#   ./ws8.sh ui              inference UI for the global model: http://localhost:8000
+#   ./ws8.sh ui              inference UI for the global model: http://localhost:8080
 #   ./ws8.sh deploy          Deployment Engine: SuperLink + 2 SuperNodes in containers
 #   ./ws8.sh rebuild         rebuild the image (after changing the code)
 #   ./ws8.sh help            all commands
@@ -35,11 +35,11 @@ fi
 tty=(); [[ -t 0 && -t 1 ]] && tty=(-it)
 ports=()
 if [[ "${1:-}" == "ui" ]]; then
-    PORT="${PORT:-8000}"
+    PORT="${PORT:-8080}"
     if (exec 3<>"/dev/tcp/127.0.0.1/$PORT") 2>/dev/null; then
-        die "port $PORT is already in use: run  PORT=8001 ./ws8.sh ui"
+        die "port $PORT is already in use: run  PORT=8081 ./ws8.sh ui"
     fi
-    ports=(-p "127.0.0.1:$PORT:8000" -e "UI_PORT=$PORT")   # this machine only: the UI shows patient data
+    ports=(-p "127.0.0.1:$PORT:8080" -e "UI_PORT=$PORT")   # this machine only: the UI shows patient data
 fi
 exec docker run --rm ${tty[@]+"${tty[@]}"} ${ports[@]+"${ports[@]}"} --shm-size=2g \
     --user "$(id -u):$(id -g)" \

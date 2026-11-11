@@ -1,6 +1,6 @@
 """Inference UI: apply the global (federated) model to one patient and show every step.
 
-    python app.py                 # http://127.0.0.1:8000
+    python app.py                 # http://127.0.0.1:8080
     python app.py --host 0.0.0.0  # inside Docker (publish the port on 127.0.0.1 only)
 
 A small standard-library web server around the same functions predict.py uses
@@ -358,7 +358,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description="Inference UI for the federated survival model.")
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=8080)
     args = parser.parse_args()
     models = list_models()
     if not models:

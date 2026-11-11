@@ -11,3 +11,4 @@ outputs/
 
 # The iDPP data (see README.md)
 /data
+/ALS.zip

@@ -6,32 +6,18 @@ Workshop 8 is about federated survival analysis for ALS on the BRAINTEASER / iDP
 
 **Docker:** to run this workshop in a container without installing anything, see [DOCKER.md](DOCKER.md) (`./ws8.sh` runs everything).
 
-all workshops use UV to install dependencies (see this page on how to install: https://docs.astral.sh/uv/getting-started/installation/)
+all workshops use UV to install dependencies (see this page on how to install: https://docs.astral.sh/uv/getting-started/installation/). To see instructions for the workshop, check the README.md in the fed-survival-flower folder. 
 
 ## Workshop Contents
 
 ### fed-survival-flower
-A Flower app (messaging API) for a federated Cox model (WebDISCO), trained on the sites' own data. The folder also has a centralised baseline, a comparison of the federated and pooled models, and a live prediction demo for one patient. See its README for setup, the commands and the exercises.
+A Flower app (messaging API) for a federated Cox model (WebDISCO), trained on the sites' own data. The folder also has a centralised baseline, a comparison of the federated and pooled models, and a live prediction demo for one patient. Its README walks you through every step, from downloading the data to the exercises.
 
 ### SCHEMA.md
 The common input schema for Turin and Answer ALS: the columns, their sources and units, and how they are coded. It also explains which model we train first and why, and what leaves a site. This is the document for the discussion with Padua.
 
 ## Data
-The data is the iDPP 2023 challenge data, partitioned by centre. Download it from the HEREDITARY collaborative platform at https://hereditary.dei.unipd.it, under Files -> Hereditary/Data/FederatedLearning. In case you are signed in, you can directly download the data by clicking [here](http://hereditary.dei.unipd.it/groupoffice/#file/1640). The code expects this layout:
-
-```
-ALS_federated/
-├── T/                       Turin
-│   ├── datasetA/            NIV or death
-│   │   ├── train/datasetA_train-{static-vars,visits,outcome,environmental}.csv
-│   │   └── test/datasetA_test-{static-vars,visits,outcome,environmental}.csv
-│   ├── datasetB/            PEG or death
-│   └── datasetC/            death only
-├── L/                       Lisbon
-└── U/                       a small centre, not a training site by default
-```
-
-Extract it into a `data/` folder in the root of this repository, so that you have `data/ALS_federated/T/...`: that is the default `data-path` in `fed-survival-flower/pyproject.toml`, and `data/` is gitignored. If your data is somewhere else, change `data-path`.
+The data is the iDPP 2023 challenge data, partitioned by centre. How to download it and where to put it is described step by step in [fed-survival-flower/README.md](fed-survival-flower/README.md#step-1-download-the-data).
 
 ## License and intended use
 

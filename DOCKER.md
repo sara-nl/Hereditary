@@ -19,7 +19,7 @@ VERDICT: identical up to rounding - the federated model IS the pooled model.
 ## Inference UI: apply the global model to a patient
 
 ```bash
-./ws8.sh ui                  # then open http://localhost:8000   (PORT=8001 ./ws8.sh ui if 8000 is taken)
+./ws8.sh ui                  # then open http://localhost:8080   (PORT=8081 ./ws8.sh ui if 8080 is taken)
 ```
 
 Pick a site, split and patient, or edit any schema value, and the page shows:
@@ -37,7 +37,7 @@ More commands:
 ./ws8.sh predict --site L                       # one patient of site L
 ./ws8.sh predict --site U --split train         # centre U, which never took part in training
 ./ws8.sh centralised | federated | compare      # one step
-./ws8.sh ui                                     # inference UI on http://localhost:8000
+./ws8.sh ui                                     # inference UI on http://localhost:8080
 ./ws8.sh deploy                                 # Deployment Engine: SuperLink + 2 SuperNodes in containers
 ./ws8.sh check                                  # only check the data and the config
 ./ws8.sh bash                                   # a shell inside the container
@@ -73,7 +73,7 @@ With Docker Compose:
 ```bash
 docker compose run --rm ws8                       # everything, in simulation
 docker compose run --rm ws8 predict --site L
-docker compose --profile sim up ui                # inference UI on http://localhost:8000
+docker compose --profile sim up ui                # inference UI on http://localhost:8080
 docker compose --profile deploy up --build --abort-on-container-exit --exit-code-from deploy-run
 docker compose --profile deploy down
 ```
@@ -96,7 +96,7 @@ docker compose --profile deploy down
 | `cannot write to /outputs` | Linux: use `./ws8.sh`, or add `--user "$(id -u):$(id -g)"` |
 | Ray warns that the object store uses `/tmp` instead of `/dev/shm` | harmless for this data size; add `--shm-size=2g` (or more) to silence it |
 | Ray is killed, or the run hangs | give Docker at least 4 GB of memory |
-| UI: `port 8000 is already in use` | `PORT=8001 ./ws8.sh ui` |
+| UI: `port 8080 is already in use` | `PORT=8081 ./ws8.sh ui` |
 | UI: `No model in outputs` | train first: `./ws8.sh` |
 | the image does not have your code changes | `./ws8.sh rebuild` |
 | `/var/folders/...` or `/tmp/...` mounts are empty (colima) | colima shares only your home folder: keep the project under `~` |
@@ -104,6 +104,6 @@ docker compose --profile deploy down
 The workshop SuperLink (`surf-superlink`) is not wired into the image, because its address comes from the group page. Since Flower 1.43 SuperLink connections live in `~/.flwr/config.toml`, not in `pyproject.toml`; in a container shell (`./ws8.sh bash`):
 
 ```bash
-mkdir -p ~/.flwr && printf '[superlink]\ndefault = "local"\n\n[superlink.local]\naddress = ":local:"\n\n[superlink.surf-superlink]\naddress = "SURF_SUPERLINK_IP:9093"\ninsecure = true\n' > ~/.flwr/config.toml
+mkdir -p ~/.flwr && printf '[superlink]\ndefault = "local"\n\n[superlink.local]\naddress = ":local:"\n\n[superlink.surf-superlink]\naddress = "SURF_SUPERLINK_IP:8000"\ninsecure = true\n' > ~/.flwr/config.toml
 flwr run . surf-superlink --stream
 ```

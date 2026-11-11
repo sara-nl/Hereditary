@@ -22,9 +22,9 @@ Commands (default: all)
                  extra args go to flwr run, e.g.  federated --run-config "l2=0.1"
   compare        federated vs centralised
   predict [ARGS] survival curve of one patient, e.g.  predict --site L --split test
-  ui             inference UI for the global model on port 8000 (publish with -p 127.0.0.1:8000:8000)
+  ui             inference UI for the global model on port 8080 (publish with -p 127.0.0.1:8080:8080)
   check          only check the data and the config
-  superlink      Deployment Engine: start a SuperLink (port 9093)
+  superlink      Deployment Engine: start a SuperLink (port 8000)
   supernode SITE [SUPERLINK_HOST]
                  Deployment Engine: start a SuperNode for SITE (T, L or U)
   deploy-run [SUPERLINK_HOST]
@@ -158,25 +158,25 @@ case "$cmd" in
     ui)
         need_models model.json
         (check_data) || echo "No usable site data: the UI works with manual input only."
-        say "Inference UI: open http://localhost:${UI_PORT:-8000} in your browser (Ctrl+C to stop)"
-        exec python app.py --host 0.0.0.0 --port 8000 ;;
+        say "Inference UI: open http://localhost:${UI_PORT:-8080} in your browser (Ctrl+C to stop)"
+        exec python app.py --host 0.0.0.0 --port 8080 ;;
     superlink)
         check_outputs
-        exec flower-superlink --insecure --host 0.0.0.0 --port 9093 ;;
+        exec flower-superlink --insecure --host 0.0.0.0 --port 8000 ;;
     supernode)
         site="${1:?usage: supernode SITE [SUPERLINK_HOST]}"; host="${2:-superlink}"
         check_data
-        exec flower-supernode --insecure --superlink "$host:9093" \
+        exec flower-supernode --insecure --superlink "$host:8000" \
             --node-config "site='$site' data-path='/app/data/ALS_federated'" ;;
     deploy-run)
         host="${1:-superlink}"
         # Flower 1.43 reads SuperLink connections from ~/.flwr/config.toml, not from pyproject.toml
         mkdir -p "$HOME/.flwr"
-        printf '[superlink]\ndefault = "local"\n\n[superlink.local]\naddress = ":local:"\n\n[superlink.local-superlink]\naddress = "%s:9093"\ninsecure = true\n' \
+        printf '[superlink]\ndefault = "local"\n\n[superlink.local]\naddress = ":local:"\n\n[superlink.local-superlink]\naddress = "%s:8000"\ninsecure = true\n' \
             "$host" > "$HOME/.flwr/config.toml"
         for i in $(seq 60); do
-            (exec 3<>"/dev/tcp/$host/9093") 2>/dev/null && break
-            [[ $i == 60 ]] && die "SuperLink $host:9093 is not reachable"
+            (exec 3<>"/dev/tcp/$host/8000") 2>/dev/null && break
+            [[ $i == 60 ]] && die "SuperLink $host:8000 is not reachable"
             sleep 1
         done
         exec flwr run . local-superlink --stream ;;

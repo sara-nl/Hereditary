@@ -62,8 +62,8 @@ RUN uv pip install --python /opt/venv/bin/python --no-deps -e /app/fed-survival-
 USER app
 WORKDIR /app/fed-survival-flower
 VOLUME ["/outputs"]
-# 9093: the SuperLink (Deployment Engine: SuperNodes and flwr run both connect here); 8000: inference UI
-EXPOSE 9093 8000
+# 8000: the SuperLink (Flower default; SuperNodes and flwr run both connect here); 8080: inference UI
+EXPOSE 8000 8080
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["all"]

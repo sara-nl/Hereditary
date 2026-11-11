@@ -28,11 +28,11 @@ services:
     profiles: [sim]   # docker compose run --rm ws8 (no "up" needed)
     command: ["all"]
 
-  ui:   # docker compose --profile sim up ui  ->  http://localhost:8000
+  ui:   # docker compose --profile sim up ui  ->  http://localhost:8080
     <<: *ws8
     profiles: [sim]
     command: ["ui"]
-    ports: ["127.0.0.1:8000:8000"]   # this machine only: the UI shows patient data
+    ports: ["127.0.0.1:8080:8080"]   # this machine only: the UI shows patient data
 
   superlink:
     <<: *ws8
