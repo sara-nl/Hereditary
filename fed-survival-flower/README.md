@@ -27,7 +27,41 @@ The input schema and the choice of model are described in [SCHEMA.md](../SCHEMA.
 
 ## Install
 
-You need Python 3.11 and the iDPP data (see the [workshop README](../README.md)). Put the data in a `data/` folder in the root of this repository, so that you have `data/ALS_federated/T/...` (the folder is gitignored), or change `data-path` in `pyproject.toml`.
+You need the iDPP data (see the [workshop README](../README.md)). Put it in a `data/` folder in the root of this repository, so that you have `data/ALS_federated/T/...` (the folder is gitignored). Then choose **one** of the two options below.
+
+### Option A: Docker (all dependencies are already installed)
+
+The [Dockerfile](../Dockerfile) in the root of the repository builds an image with Python 3.11, every dependency (pinned with hashes in `docker/requirements.lock`) and this code. You do not need Python or uv on your machine, only Docker with at least 4 GB of memory. The data is not in the image: you mount it when you start a container.
+
+Build the image once, from the root of the repository:
+
+```bash
+cd hereditary-ws8            # the root of this repository, not fed-survival-flower/
+docker build -t hereditary-ws8 .
+```
+
+Start an interactive shell in the container:
+
+```bash
+docker run --rm -it --shm-size=2g \
+    -v "$PWD/data:/app/data:ro" \
+    -v "$PWD/outputs:/outputs" \
+    -p 127.0.0.1:8000:8000 \
+    hereditary-ws8 bash
+```
+
+- `-v "$PWD/data:/app/data:ro"` mounts your data read-only. Inside the container the code is in `/app/fed-survival-flower`, so the default `data-path` (`../data/ALS_federated`) finds it at `/app/data/ALS_federated`. If your data is somewhere else, use that path on the left, for example `-v "$HOME/Downloads/idpp:/app/data:ro"`, where `$HOME/Downloads/idpp/ALS_federated/T/...` exists.
+- `-v "$PWD/outputs:/outputs"` puts the results (`outputs/` in the commands below) in `./outputs` on your machine, so they are kept after the container stops.
+- `-p 127.0.0.1:8000:8000` is only needed for the inference UI (step 5). Start it in the container with `python app.py --host 0.0.0.0`, then open http://localhost:8000.
+- On Linux, add `--user "$(id -u):$(id -g)"` so that the files in `./outputs` belong to you. In Windows PowerShell, write `${PWD}` instead of `$PWD`.
+
+The shell starts in `/app/fed-survival-flower`, with the environment already active. Every command in [Running the experiment](#running-the-experiment) works as written there, so skip the uv steps below. The code is copied into the image, so after you change it, run `docker build -t hereditary-ws8 .` again.
+
+For running everything without a shell (`./ws8.sh`), the Deployment Engine in containers and Docker Compose, see [DOCKER.md](../DOCKER.md). Note that those commands mount the data at `/data` instead of `/app/data`: the image's own commands link it into place for you, but a plain `bash` shell does not.
+
+### Option B: manual installation with uv
+
+You need Python 3.11 and [uv](https://docs.astral.sh/uv/getting-started/installation/). If your data is not in `data/` in the root of the repository, change `data-path` in `pyproject.toml`.
 
 ```bash
 cd fed-survival-flower
